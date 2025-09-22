@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易經數字占卜</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>易經數字占卜</h1>
+            <p class="subtitle">透過數字探索易經的智慧</p>
+        </header>
+
+        <main>
+            <div class="divination-section">
+                <div id="welcome-card" class="card">
+                    <div class="card-content">
+                        <h2>歡迎來到易經占卜</h2>
+                        <p>易經是中華文化的重要經典，透過數字占卜可以獲得智慧的指引。</p>
+                        <p>點擊下方按鈕，系統將為您生成兩個隨機數字，並根據易經原理進行解讀。</p>
+                        <button id="start-divination" class="btn btn-primary">
+                            <span class="btn-text">開始占卜</span>
+                            <span class="btn-icon">🔮</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="result-card" class="card hidden">
+                    <div class="card-content">
+                        <div class="result-header">
+                            <h2>占卜結果</h2>
+                            <button id="new-divination" class="btn btn-secondary">重新占卜</button>
+                        </div>
+                        
+                        <div class="numbers-display">
+                            <div class="number-item">
+                                <span class="number-label">第一個數字</span>
+                                <span id="number1" class="number-value">--</span>
+                            </div>
+                            <div class="number-separator">+</div>
+                            <div class="number-item">
+                                <span class="number-label">第二個數字</span>
+                                <span id="number2" class="number-value">--</span>
+                            </div>
+                        </div>
+
+                        <div class="gua-info">
+                            <div class="gua-name">
+                                <span class="gua-label">卦名</span>
+                                <span id="gua-name" class="gua-value">--</span>
+                            </div>
+                            <div class="gua-description">
+                                <span class="gua-label">卦象描述</span>
+                                <p id="gua-description" class="gua-text">--</p>
+                            </div>
+                            <div class="gua-interpretation">
+                                <span class="gua-label">占卜解釋</span>
+                                <p id="gua-interpretation" class="gua-text">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading-card" class="card hidden">
+                    <div class="card-content">
+                        <div class="loading-spinner"></div>
+                        <p>正在為您占卜，請稍候...</p>
+                    </div>
+                </div>
+
+                <div id="error-card" class="card hidden">
+                    <div class="card-content">
+                        <h2>占卜失敗</h2>
+                        <p id="error-message">抱歉，占卜過程中發生錯誤，請稍後再試。</p>
+                        <button id="retry-divination" class="btn btn-primary">重試</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="card">
+                    <div class="card-content">
+                        <h3>關於易經占卜</h3>
+                        <p>易經是中華文化的瑰寶，通過數字占卜可以獲得智慧的指引。本應用使用隨機數字生成的方式，結合易經六十四卦的原理，為您提供簡單的占卜體驗。</p>
+                        <p><strong>免責聲明：</strong>本應用僅供娛樂和文化學習使用，不應作為重要決策的依據。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 易經數字占卜應用 | 基於傳統易經文化</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
