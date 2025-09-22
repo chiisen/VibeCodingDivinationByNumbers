@@ -2,6 +2,8 @@
 
 Vibe Coding Divination By Numbers
 
+![one01](./images/one01.png)
+
 [PRD](PRD.md)
 
 # PYTHON 🎯 核心功能（已完成）
