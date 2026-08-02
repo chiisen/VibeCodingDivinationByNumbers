@@ -301,4 +301,12 @@ document.addEventListener('DOMContentLoaded', function() {
             container.style.transform = 'translateY(0)';
         }, 80);
     }
+
+    // Service Worker PWA 離線註冊
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(err => {
+            console.log('SW registration failed:', err);
+        });
+    }
 });
+
