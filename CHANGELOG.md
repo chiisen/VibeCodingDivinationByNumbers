@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 新增「一鍵複製卦辭」與 Web Audio API 「古磬 432Hz 起卦音效」 (Closes #9)。
 - 支援 PWA (Progressive Web App) 手機端獨立 App 與離線快取支援 (`manifest.json`, `sw.js`) (Closes #8)。
+
 - 新增「卦象典雅圖卡導出/分享」功能 (Canvas PNG 動態生成) (Closes #7)。
 
 - 導入「動爻與之卦（本卦 ➔ 變卦）」演算機制 (Closes #6)。

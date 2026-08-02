@@ -168,10 +168,64 @@ modeCustomBtn?.addEventListener('click', () => {
     customPanel.classList.remove('hidden');
 });
 
+// Web Audio API 原生古磬起卦音效 (432Hz)
+function playZenChimeSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(432, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(108, ctx.currentTime + 1.8);
+        
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.0);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 2.0);
+    } catch (e) {
+        console.log('Audio Context Error:', e);
+    }
+}
+
+// 複製卦辭
+const copyTextBtn = document.getElementById('copy-text-btn');
+copyTextBtn?.addEventListener('click', () => {
+    const guaName = guaNameElement?.textContent || '';
+    const movingText = document.getElementById('moving-yao-badge')?.textContent || '';
+    const derivedName = document.getElementById('derived-gua-name')?.textContent || '';
+    const desc = guaDescriptionElement?.textContent || '';
+    const interp = guaInterpretationElement?.textContent || '';
+    
+    const textToCopy = `【易經數理占卜 ‧ 靈符卦象】\n本卦：${guaName}\n${movingText} ➔ 之卦：${derivedName}\n\n📜 卦象大象傳：\n${desc}\n\n💡 占斷啟示：\n${interp}`;
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const span = copyTextBtn.querySelector('span');
+        if (span) {
+            const original = span.textContent;
+            span.textContent = '✅ 已複製卦辭';
+            setTimeout(() => { span.textContent = original; }, 2000);
+        }
+    }).catch(err => {
+        console.error('複製失敗:', err);
+    });
+});
+
 // 執行占卜的主要函數
 async function performDivination() {
     try {
+        // 播放古磬音效
+        playZenChimeSound();
+
         let endpoint = '/divination';
+
         let options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
