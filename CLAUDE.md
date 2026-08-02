@@ -16,6 +16,10 @@
 
 # 指定 Port 啟動
 $env:PORT=5001; .\.venv\Scripts\python.exe app.py
+
+# 執行 TDD 單元測試
+.\.venv\Scripts\python.exe -m pytest
+
 ```
 
 ---

@@ -5,7 +5,13 @@
 
 ## [1.1.0] - 2026-08-02
 
+### 新增 (Added)
+- 導入 TDD (Test-Driven Development) 單元測試架構 (`tests/test_app.py`) (Closes #1)。
+- 在 `requirements.txt` 新增 `pytest` 套件支援。
+- 新增首頁、版本查詢 API、隨機起卦、卦象解讀與 400 邊界條件之自動化測試。
+
 ### 變更 (Changed)
+
 - 全面優化前端視覺風格：去除傳統紫色/霓虹等俗套 AI 質感，改為**東方禪意極簡美學 (Modern Eastern Zen Minimalism)**。
 - 引入 Google Fonts `Noto Serif TC` (明體/宋體) 與 `Cinzel` 字型，提升古典經典人文韻味。
 - 後端與前端全面整合 **易經 Unicode 六十四卦爻符 (䷀~䷿)** 與古籍卡片排版。
