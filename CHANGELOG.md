@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 導入「動爻與之卦（本卦 ➔ 變卦）」演算機制 (Closes #6)。
 - 支援「自訂數字求卦 (Custom Numbers Input)」功能 (Closes #5)。
+
 - 新增 GitHub Issue 與 Pull Request 標準驗收範本 (`.github/ISSUE_TEMPLATE`, `.github/PULL_REQUEST_TEMPLATE.md`) (Closes #4)。
 
 - 導入 API 參數嚴格型別校驗與 Fail-Fast 錯誤處理機制 (Closes #3)。

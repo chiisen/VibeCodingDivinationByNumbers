@@ -97,15 +97,36 @@
                             </div>
                         </div>
 
-                        <!-- 卦象古籍卡 -->
+                        <!-- 卦象古籍卡 (本卦 ➔ 動爻 ➔ 之卦) -->
                         <div class="gua-info-classic">
-                            <div class="gua-symbol-wrapper">
-                                <div id="gua-symbol" class="hexagram-symbol">䷀</div>
-                                <div class="gua-title-block">
-                                    <span class="gua-index-tag" id="gua-number-tag">第 -- 卦</span>
-                                    <h3 id="gua-name" class="gua-name-text">--</h3>
+                            <div class="gua-flow-wrapper">
+                                <!-- 本卦 -->
+                                <div class="gua-symbol-wrapper main-gua">
+                                    <span class="gua-flow-tag">本卦 (主象)</span>
+                                    <div id="gua-symbol" class="hexagram-symbol">䷀</div>
+                                    <div class="gua-title-block">
+                                        <span class="gua-index-tag" id="gua-number-tag">第 -- 卦</span>
+                                        <h3 id="gua-name" class="gua-name-text">--</h3>
+                                    </div>
+                                </div>
+
+                                <!-- 動爻轉折點 -->
+                                <div class="gua-transition">
+                                    <span class="transition-arrow">➔</span>
+                                    <span class="yao-change-badge" id="moving-yao-badge">動爻：--</span>
+                                </div>
+
+                                <!-- 之卦 (變卦) -->
+                                <div class="gua-symbol-wrapper derived-gua">
+                                    <span class="gua-flow-tag derived-tag">之卦 (變象)</span>
+                                    <div id="derived-gua-symbol" class="hexagram-symbol">䷁</div>
+                                    <div class="gua-title-block">
+                                        <span class="gua-index-tag" id="derived-gua-number-tag">第 -- 卦</span>
+                                        <h3 id="derived-gua-name" class="gua-name-text">--</h3>
+                                    </div>
                                 </div>
                             </div>
+
 
                             <div class="gua-detail-section">
                                 <div class="gua-box">

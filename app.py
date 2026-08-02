@@ -134,9 +134,20 @@ def generate_numbers():
             'error': str(e)
         }), 500
 
+YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻']
+
+def calculate_derived_gua(gua_index: int, number1: int) -> Tuple[int, str, int, str, str]:
+    """計算動爻位置 (1-6) 與演變後的之卦 (變卦)"""
+    moving_yao_idx = (number1 - 1) % 6
+    moving_yao_name = YAO_NAMES[moving_yao_idx]
+    derived_index = gua_index ^ (1 << moving_yao_idx)
+    derived_info = YIJING_GUA[derived_index]
+    derived_symbol = chr(0x4DC0 + derived_index)
+    return moving_yao_idx + 1, moving_yao_name, derived_index, derived_info['name'], derived_symbol
+
 @app.route('/interpret', methods=['POST'])
 def interpret_numbers():
-    """根據兩個數字進行易經解讀 (含型別安全校驗)"""
+    """根據兩個數字進行易經解讀 (含本卦與之卦動爻演算)"""
     try:
         data = request.get_json() or {}
         raw1 = data.get('number1')
@@ -150,12 +161,11 @@ def interpret_numbers():
         if err2:
             return jsonify({'success': False, 'error': err2}), 400
         
-        # 計算卦象索引：兩個數字的總和模 64
         gua_index = (num1 + num2) % 64
-        
-        # 獲取對應的卦象信息
         gua_info = YIJING_GUA[gua_index]
         gua_symbol = chr(0x4DC0 + gua_index)
+        
+        line_num, line_name, derived_idx, derived_name, derived_symbol = calculate_derived_gua(gua_index, num1)
         
         return jsonify({
             'success': True,
@@ -165,7 +175,12 @@ def interpret_numbers():
             'gua_name': gua_info['name'],
             'gua_symbol': gua_symbol,
             'gua_description': gua_info['description'],
-            'gua_interpretation': gua_info['interpretation']
+            'gua_interpretation': gua_info['interpretation'],
+            'moving_yao_num': line_num,
+            'moving_yao_name': line_name,
+            'derived_gua_index': derived_idx,
+            'derived_gua_name': derived_name,
+            'derived_gua_symbol': derived_symbol
         })
     except Exception as e:
         return jsonify({
@@ -173,19 +188,18 @@ def interpret_numbers():
             'error': str(e)
         }), 500
 
-
 @app.route('/divination', methods=['POST'])
 def divination():
-    """一次性完成占卜：生成數字並解讀"""
+    """一次性完成占卜：生成數字並解讀 (含本卦與之卦)"""
     try:
-        # 生成兩個隨機數字
         number1 = random.randint(1, 100)
         number2 = random.randint(1, 100)
         
-        # 計算卦象索引
         gua_index = (number1 + number2) % 64
         gua_info = YIJING_GUA[gua_index]
         gua_symbol = chr(0x4DC0 + gua_index)
+        
+        line_num, line_name, derived_idx, derived_name, derived_symbol = calculate_derived_gua(gua_index, number1)
         
         return jsonify({
             'success': True,
@@ -195,14 +209,19 @@ def divination():
             'gua_name': gua_info['name'],
             'gua_symbol': gua_symbol,
             'gua_description': gua_info['description'],
-            'gua_interpretation': gua_info['interpretation']
+            'gua_interpretation': gua_info['interpretation'],
+            'moving_yao_num': line_num,
+            'moving_yao_name': line_name,
+            'derived_gua_index': derived_idx,
+            'derived_gua_name': derived_name,
+            'derived_gua_symbol': derived_symbol
         })
-
     except Exception as e:
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
+
 
 @app.route('/api/version', methods=['GET'])
 

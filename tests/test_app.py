@@ -51,6 +51,13 @@ def test_divination_api(client):
     assert 'gua_symbol' in data
     assert len(data['gua_symbol']) == 1
     assert ord(data['gua_symbol']) == (0x4DC0 + expected_index)
+    
+    # 驗證動爻與之卦 (變卦) 演算
+    assert 'moving_yao_num' in data
+    assert 1 <= data['moving_yao_num'] <= 6
+    assert 'derived_gua_name' in data
+    assert 'derived_gua_symbol' in data
+
 
 def test_interpret_api_valid(client):
     """測試提供指定數字之卦象解讀 API"""

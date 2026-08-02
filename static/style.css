@@ -385,17 +385,69 @@ body {
     margin-top: 30px;
 }
 
+.gua-flow-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
 .gua-symbol-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 25px;
-    padding: 20px;
+    gap: 20px;
+    padding: 16px 24px;
     background: rgba(212, 175, 55, 0.04);
     border: 1px dashed var(--border-gold);
     border-radius: 10px;
-    margin-bottom: 24px;
+    position: relative;
+    flex: 1;
+    min-width: 220px;
 }
+
+.gua-flow-tag {
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--bg-dark);
+    padding: 0 8px;
+    font-size: 0.75rem;
+    color: var(--gold-light);
+    border: 1px solid var(--border-gold);
+    border-radius: 10px;
+    font-family: var(--font-serif);
+}
+
+.derived-tag {
+    color: var(--vermilion);
+    border-color: var(--vermilion);
+}
+
+.gua-transition {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.transition-arrow {
+    font-size: 1.6rem;
+    color: var(--gold-primary);
+}
+
+.yao-change-badge {
+    font-size: 0.8rem;
+    color: var(--vermilion);
+    background: rgba(200, 62, 61, 0.12);
+    border: 1px solid var(--vermilion);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-family: var(--font-serif);
+}
+
 
 .hexagram-symbol {
     font-size: 5.5rem;

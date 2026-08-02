@@ -114,15 +114,22 @@ function displayResult(data) {
     if (number2Element) number2Element.textContent = data.number2;
     if (guaModElement) guaModElement.textContent = data.gua_index;
     
-    // 卦號標籤
+    // 本卦
     if (guaNumberTagElement) guaNumberTagElement.textContent = `第 ${data.gua_index + 1} 卦`;
-    
-    // 易經 Unicode 六爻卦符號 (䷀~䷿)
-    if (guaSymbolElement) {
-        guaSymbolElement.textContent = data.gua_symbol || '☯';
-    }
-    
+    if (guaSymbolElement) guaSymbolElement.textContent = data.gua_symbol || '☯';
     if (guaNameElement) guaNameElement.textContent = `${data.gua_name}卦`;
+    
+    // 動爻與之卦 (變卦)
+    const movingYaoBadge = document.getElementById('moving-yao-badge');
+    const derivedGuaSymbol = document.getElementById('derived-gua-symbol');
+    const derivedGuaTag = document.getElementById('derived-gua-number-tag');
+    const derivedGuaName = document.getElementById('derived-gua-name');
+    
+    if (movingYaoBadge) movingYaoBadge.textContent = `動爻：${data.moving_yao_name || '動爻'}`;
+    if (derivedGuaSymbol) derivedGuaSymbol.textContent = data.derived_gua_symbol || '☯';
+    if (derivedGuaTag) derivedGuaTag.textContent = `第 ${(data.derived_gua_index ?? 0) + 1} 卦`;
+    if (derivedGuaName) derivedGuaName.textContent = `${data.derived_gua_name || '--'}卦`;
+    
     if (guaDescriptionElement) guaDescriptionElement.textContent = data.gua_description;
     if (guaInterpretationElement) guaInterpretationElement.textContent = data.gua_interpretation;
     
@@ -134,6 +141,7 @@ function displayResult(data) {
     // 執行細緻的文字與數值浮出動畫
     animateResultElements();
 }
+
 
 // 顯示錯誤
 function showError(message) {
