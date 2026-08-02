@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 新增健康檢查端點 (`GET /health`) 與標準結構化日誌 (`logging`) (Closes #12)。
 - 支援 Docker 容器化與 Docker Compose 部署配置 (`Dockerfile`, `docker-compose.yml`) (Closes #11)。
+
 - 新增「個人求卦歷史紀錄」區塊 (LocalStorage 本地保留 10 筆歷史紀錄與快速檢視) (Closes #10)。
 
 - 新增「一鍵複製卦辭」與 Web Audio API 「古磬 432Hz 起卦音效」 (Closes #9)。

@@ -3,12 +3,22 @@ import random
 import json
 import os
 import subprocess
+import time
+import logging
 from typing import Dict, Any, Tuple, Optional
+
+# 配置結構化日誌
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+logger = logging.getLogger("yijing_app")
 
 app = Flask(__name__)
 
 
 APP_VERSION = "1.1.0"
+START_TIME = time.time()
 
 def validate_number_param(val: Any, param_name: str, min_val: int = 1, max_val: int = 9999) -> Tuple[Optional[int], Optional[str]]:
     """驗證與轉型數字參數，確保型別安全與 Fail-Fast 錯誤防護"""
@@ -224,7 +234,6 @@ def divination():
 
 
 @app.route('/api/version', methods=['GET'])
-
 def get_version():
     """獲取版本號與 Git commit 資訊"""
     return jsonify({
@@ -233,6 +242,18 @@ def get_version():
         'git_commit': get_git_commit(),
         'full_version': get_version_info()
     })
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """健康檢查端點，提供系統存活狀態與運作指標"""
+    uptime_seconds = round(time.time() - START_TIME, 2)
+    return jsonify({
+        'status': 'ok',
+        'version': APP_VERSION,
+        'git_commit': get_git_commit(),
+        'uptime_seconds': uptime_seconds
+    })
+
 
 import socket
 

@@ -100,5 +100,16 @@ def test_interpret_api_out_of_range(client):
     assert data['success'] is False
     assert "必須介於 1 至 9999 之間" in data['error']
 
+def test_health_check_api(client):
+    """測試健康檢查端點 /health"""
+    response = client.get('/health')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'ok'
+    assert 'version' in data
+    assert 'uptime_seconds' in data
+    assert data['uptime_seconds'] >= 0
+
+
 
 
