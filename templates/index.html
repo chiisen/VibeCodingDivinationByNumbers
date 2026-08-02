@@ -38,6 +38,24 @@
                             易有太極，是生兩儀。請平心靜氣，默想心中所求之事。<br>
                             點擊下方起卦按鈕，系統將感應數列，為您求得天地相對應之六十四卦大象。
                         </p>
+                        <!-- 起卦模式切換 -->
+                        <div class="divination-mode-toggle">
+                            <button id="mode-random" class="mode-btn active">🎲 隨機天成</button>
+                            <button id="mode-custom" class="mode-btn">✍️ 心感自訂數</button>
+                        </div>
+
+                        <!-- 自訂數字輸入面板 (預設隱藏) -->
+                        <div id="custom-numbers-panel" class="custom-panel hidden">
+                            <div class="input-group">
+                                <label for="custom-num1">上數 (1-9999)</label>
+                                <input type="number" id="custom-num1" min="1" max="9999" placeholder="例如: 8">
+                            </div>
+                            <div class="input-group">
+                                <label for="custom-num2">下數 (1-9999)</label>
+                                <input type="number" id="custom-num2" min="1" max="9999" placeholder="例如: 21">
+                            </div>
+                        </div>
+
                         <div class="action-area">
                             <button id="start-divination" class="btn btn-zen">
                                 <span class="btn-symbol">☯</span>
@@ -45,6 +63,7 @@
                             </button>
                             <span class="hotkey-tip">快捷鍵：按下 [ Space 空白鍵 ] 開始</span>
                         </div>
+
                     </div>
                 </div>
 

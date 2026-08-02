@@ -10,15 +10,18 @@ app = Flask(__name__)
 
 APP_VERSION = "1.1.0"
 
-def validate_number_param(val: Any, param_name: str) -> Tuple[Optional[int], Optional[str]]:
+def validate_number_param(val: Any, param_name: str, min_val: int = 1, max_val: int = 9999) -> Tuple[Optional[int], Optional[str]]:
     """驗證與轉型數字參數，確保型別安全與 Fail-Fast 錯誤防護"""
     if val is None:
         return None, f"缺少 '{param_name}' 參數"
     try:
         num = int(val)
+        if num < min_val or num > max_val:
+            return None, f"'{param_name}' 必須介於 {min_val} 至 {max_val} 之間"
         return num, None
     except (ValueError, TypeError):
         return None, f"'{param_name}' 必須為有效整數"
+
 
 def get_git_commit() -> Optional[str]:
 

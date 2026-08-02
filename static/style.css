@@ -163,7 +163,72 @@ body {
     position: relative;
 }
 
+/* 起卦模式切換與自訂數字面板 */
+.divination-mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-dark);
+    color: var(--text-muted);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn.active {
+    background: rgba(212, 175, 55, 0.12);
+    border-color: var(--border-gold);
+    color: var(--gold-light);
+}
+
+.custom-panel {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-family: var(--font-serif);
+}
+
+.input-group input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-gold);
+    color: var(--gold-light);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    width: 150px;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 10px var(--gold-glow);
+}
+
 /* 印章圖示 */
+
 .card-seal {
     position: absolute;
     top: 24px;

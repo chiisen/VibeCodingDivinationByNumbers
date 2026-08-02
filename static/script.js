@@ -36,22 +36,55 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// 模式切換與 DOM 引用
+const modeRandomBtn = document.getElementById('mode-random');
+const modeCustomBtn = document.getElementById('mode-custom');
+const customPanel = document.getElementById('custom-numbers-panel');
+const customNum1Input = document.getElementById('custom-num1');
+const customNum2Input = document.getElementById('custom-num2');
+
+let currentMode = 'random'; // 'random' 或 'custom'
+
+modeRandomBtn?.addEventListener('click', () => {
+    currentMode = 'random';
+    modeRandomBtn.classList.add('active');
+    modeCustomBtn.classList.remove('active');
+    customPanel.classList.add('hidden');
+});
+
+modeCustomBtn?.addEventListener('click', () => {
+    currentMode = 'custom';
+    modeCustomBtn.classList.add('active');
+    modeRandomBtn.classList.remove('active');
+    customPanel.classList.remove('hidden');
+});
+
 // 執行占卜的主要函數
 async function performDivination() {
     try {
+        let endpoint = '/divination';
+        let options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        };
+
+        if (currentMode === 'custom') {
+            const num1 = parseInt(customNum1Input?.value || '0', 10);
+            const num2 = parseInt(customNum2Input?.value || '0', 10);
+            if (isNaN(num1) || num1 < 1 || num1 > 9999 || isNaN(num2) || num2 < 1 || num2 > 9999) {
+                showError('請在自訂數字輸入 1 至 9999 之間的有效數字');
+                return;
+            }
+            endpoint = '/interpret';
+            options.body = JSON.stringify({ number1: num1, number2: num2 });
+        }
+
         // 顯示載入狀態
         showLoading();
         
-        // 延遲至少 900ms 以呈送籌策起卦之儀式感
-        const minLoadingPromise = new Promise(resolve => setTimeout(resolve, 900));
-        
-        // 發送請求到後端
-        const fetchPromise = fetch('/divination', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        }).then(res => res.json());
+        // 延遲至少 800ms 以呈送籌策起卦之儀式感
+        const minLoadingPromise = new Promise(resolve => setTimeout(resolve, 800));
+        const fetchPromise = fetch(endpoint, options).then(res => res.json());
 
         const [_, data] = await Promise.all([minLoadingPromise, fetchPromise]);
         
@@ -65,6 +98,7 @@ async function performDivination() {
         showError('網路連接失敗，請檢查網路狀態後重試');
     }
 }
+
 
 // 顯示載入狀態
 function showLoading() {

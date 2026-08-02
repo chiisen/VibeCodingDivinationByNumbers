@@ -84,3 +84,14 @@ def test_interpret_api_invalid_types(client):
     assert data['success'] is False
     assert "'number1' 必須為有效整數" in data['error']
 
+def test_interpret_api_out_of_range(client):
+    """測試傳入超出範圍 1-9999 數字時之 HTTP 400 錯誤處理"""
+    payload = {'number1': 0, 'number2': 50}
+    response = client.post('/interpret', json=payload)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['success'] is False
+    assert "必須介於 1 至 9999 之間" in data['error']
+
+
+
