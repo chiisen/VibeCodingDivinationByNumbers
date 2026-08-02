@@ -88,5 +88,24 @@ graph TD
 
 ---
 
+## 5. TDD (Test-Driven Development) 開發規範與操作流程
+
+本專案實施 **TDD (測試驅動開發)** 流程，所有 AI Agent 與開發者新增功能或修復 Bug 時，必須遵循以下三階段：
+
+```mermaid
+graph LR
+    Red["🔴 1. Red (先寫測試)<br>在 tests/ 撰寫失敗案例"] --> Green["🟢 2. Green (最小實作)<br>撰寫程式碼使 pytest 通過"]
+    Green --> Refactor["🔵 3. Refactor (重構優化)<br>測試保護下優化代碼"]
+```
+
+### TDD 操作步驟與要求
+1. **Red (撰寫測試)**：在 `tests/test_app.py` 中先定義功能或邊界條件之測試案例（如參數驗證、狀態碼、回應結構）。
+2. **Green (通過測試)**：撰寫解決當前 Issue 所需的最少代碼，執行 `.\.venv\Scripts\python.exe -m pytest` 直至出現 100% 綠燈 (`passed`)。
+3. **Refactor (重構與驗證)**：在測試防護網下優化結構，確保無迴歸損壞。
+4. **DoD 驗收條件**：提交 PR 之前，必須於 PR 內容中附上 `pytest` 測試 100% 通過之命令輸出紀錄。
+
+---
+
 > [!IMPORTANT]
 > **全域約束**：無論使用何種 AI 工具，回覆說明、Commit 訊息、文件更新皆必須使用 **正體中文 (繁體中文)**。
+

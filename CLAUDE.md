@@ -33,4 +33,9 @@ $env:PORT=5001; .\.venv\Scripts\python.exe app.py
    - 修改並測試程式碼：執行 `.\.venv\Scripts\python.exe app.py` 驗證。
    - 提交 commit：`git commit -m "feat(scope): 繁體中文說明"`。
    - 發起 PR 並寫明 `Closes #<issue-id>`。
-3. **交接準備**：若暫時中斷任務，請更新 `.agent_task_state.md` 供下一位 AI 接手。
+3. **TDD 開發流程 (Red ➔ Green ➔ Refactor)**：
+   - 收到 Issue 後，先於 `tests/test_app.py` 撰寫失敗測試 (Red)。
+   - 實作最少代碼使 `pytest` 測試綠燈 (Green)。
+   - 在測試保護下進行代碼優化 (Refactor)。
+4. **交接準備**：若暫時中斷任務，請更新 `.agent_task_state.md` 供下一位 AI 接手。
+
