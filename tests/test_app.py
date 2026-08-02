@@ -73,4 +73,14 @@ def test_interpret_api_missing_parameters(client):
     assert response.status_code == 400
     data = response.get_json()
     assert data['success'] is False
-    assert '缺少數字參數' in data['error']
+    assert "缺少 'number2' 參數" in data['error']
+
+def test_interpret_api_invalid_types(client):
+    """測試傳入非數字/無效字串時之 Fail-Fast 400 錯誤防護"""
+    payload = {'number1': 'invalid_string', 'number2': 47}
+    response = client.post('/interpret', json=payload)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['success'] is False
+    assert "'number1' 必須為有效整數" in data['error']
+

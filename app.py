@@ -3,13 +3,25 @@ import random
 import json
 import os
 import subprocess
+from typing import Dict, Any, Tuple, Optional
 
 app = Flask(__name__)
 
+
 APP_VERSION = "1.1.0"
 
+def validate_number_param(val: Any, param_name: str) -> Tuple[Optional[int], Optional[str]]:
+    """驗證與轉型數字參數，確保型別安全與 Fail-Fast 錯誤防護"""
+    if val is None:
+        return None, f"缺少 '{param_name}' 參數"
+    try:
+        num = int(val)
+        return num, None
+    except (ValueError, TypeError):
+        return None, f"'{param_name}' 必須為有效整數"
 
-def get_git_commit():
+def get_git_commit() -> Optional[str]:
+
     """獲取當前 Git short commit hash"""
     try:
         commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], stderr=subprocess.DEVNULL)
@@ -121,20 +133,22 @@ def generate_numbers():
 
 @app.route('/interpret', methods=['POST'])
 def interpret_numbers():
-    """根據兩個數字進行易經解讀"""
+    """根據兩個數字進行易經解讀 (含型別安全校驗)"""
     try:
-        data = request.get_json()
-        number1 = data.get('number1')
-        number2 = data.get('number2')
+        data = request.get_json() or {}
+        raw1 = data.get('number1')
+        raw2 = data.get('number2')
         
-        if number1 is None or number2 is None:
-            return jsonify({
-                'success': False,
-                'error': '缺少數字參數'
-            }), 400
+        num1, err1 = validate_number_param(raw1, 'number1')
+        if err1:
+            return jsonify({'success': False, 'error': err1}), 400
+            
+        num2, err2 = validate_number_param(raw2, 'number2')
+        if err2:
+            return jsonify({'success': False, 'error': err2}), 400
         
         # 計算卦象索引：兩個數字的總和模 64
-        gua_index = (number1 + number2) % 64
+        gua_index = (num1 + num2) % 64
         
         # 獲取對應的卦象信息
         gua_info = YIJING_GUA[gua_index]
@@ -142,8 +156,8 @@ def interpret_numbers():
         
         return jsonify({
             'success': True,
-            'number1': number1,
-            'number2': number2,
+            'number1': num1,
+            'number2': num2,
             'gua_index': gua_index,
             'gua_name': gua_info['name'],
             'gua_symbol': gua_symbol,
@@ -155,6 +169,7 @@ def interpret_numbers():
             'success': False,
             'error': str(e)
         }), 500
+
 
 @app.route('/divination', methods=['POST'])
 def divination():

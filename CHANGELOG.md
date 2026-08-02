@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 導入 API 參數嚴格型別校驗與 Fail-Fast 錯誤處理機制 (Closes #3)。
 - 新增 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) (Closes #2)。
+
 - 導入 TDD (Test-Driven Development) 單元測試架構 (`tests/test_app.py`) (Closes #1)。
 
 - 在 `requirements.txt` 新增 `pytest` 套件支援。
