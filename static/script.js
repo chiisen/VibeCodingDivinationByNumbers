@@ -303,7 +303,74 @@ function displayResult(data) {
     
     // 執行細緻的文字與數值浮出動畫
     animateResultElements();
+
+    // 寫入歷史紀錄 (僅當包含全量 data 時)
+    if (data.gua_name && !data.is_history_view) {
+        saveToHistory({
+            ...data,
+            timestamp: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+    }
 }
+
+// LocalStorage 歷史紀錄管理
+const STORAGE_KEY = 'yijing_divination_history';
+const historyListElement = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+function saveToHistory(record) {
+    let history = getHistory();
+    // 避免重複寫入同一筆
+    if (history.length > 0 && history[0].gua_index === record.gua_index && history[0].number1 === record.number1) {
+        return;
+    }
+    history.unshift(record);
+    if (history.length > 10) history = history.slice(0, 10);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    renderHistory();
+}
+
+function getHistory() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function renderHistory() {
+    if (!historyListElement) return;
+    const history = getHistory();
+    if (history.length === 0) {
+        historyListElement.innerHTML = '<p class="empty-history-text">尚無起卦歷史紀錄。</p>';
+        return;
+    }
+
+    historyListElement.innerHTML = history.map((item, idx) => `
+        <div class="history-item" data-idx="${idx}">
+            <div class="history-main-info">
+                <span class="history-symbol">${item.gua_symbol || '☯'}</span>
+                <span class="history-names">${item.gua_name}卦 (${item.moving_yao_name || ''} ➔ ${item.derived_gua_name || ''}卦)</span>
+            </div>
+            <span class="history-time">${item.timestamp}</span>
+        </div>
+    `).join('');
+
+    historyListElement.querySelectorAll('.history-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const idx = parseInt(el.getAttribute('data-idx') || '0', 10);
+            const selected = history[idx];
+            if (selected) displayResult({ ...selected, is_history_view: true });
+        });
+    });
+}
+
+clearHistoryBtn?.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    renderHistory();
+});
+
 
 
 // 顯示錯誤
@@ -356,7 +423,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 80);
     }
 
+    // 頁面載入時初始化歷史紀錄
+    renderHistory();
+
     // Service Worker PWA 離線註冊
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/static/sw.js').catch(err => {
             console.log('SW registration failed:', err);

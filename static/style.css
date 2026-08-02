@@ -607,3 +607,96 @@ body {
         font-size: 2.2rem;
     }
 }
+
+/* 歷史紀錄區塊樣式 */
+.history-card {
+    margin-top: 30px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--border-dark);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.history-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gold-light);
+    font-family: var(--font-serif);
+}
+
+.history-title h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.btn-text-danger {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.btn-text-danger:hover {
+    color: var(--vermilion);
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.empty-history-text {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 16px 0;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-dark);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    border-color: var(--border-gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.history-main-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.history-symbol {
+    font-size: 1.4rem;
+    color: var(--gold-primary);
+}
+
+.history-names {
+    font-family: var(--font-serif);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.history-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
