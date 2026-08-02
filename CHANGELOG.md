@@ -2,6 +2,10 @@
 
 所有本專案的重要變更都將記錄於此檔案。
 本格式基於 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)。
+## [Unreleased]
+
+### 移除 (Removed)
+- 移除 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) 與 README 中的 CI 狀態徽章。
 
 ## [1.1.0] - 2026-08-02
 
