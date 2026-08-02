@@ -6,7 +6,7 @@ import subprocess
 
 app = Flask(__name__)
 
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 
 
 def get_git_commit():
@@ -138,6 +138,7 @@ def interpret_numbers():
         
         # 獲取對應的卦象信息
         gua_info = YIJING_GUA[gua_index]
+        gua_symbol = chr(0x4DC0 + gua_index)
         
         return jsonify({
             'success': True,
@@ -145,6 +146,7 @@ def interpret_numbers():
             'number2': number2,
             'gua_index': gua_index,
             'gua_name': gua_info['name'],
+            'gua_symbol': gua_symbol,
             'gua_description': gua_info['description'],
             'gua_interpretation': gua_info['interpretation']
         })
@@ -165,6 +167,7 @@ def divination():
         # 計算卦象索引
         gua_index = (number1 + number2) % 64
         gua_info = YIJING_GUA[gua_index]
+        gua_symbol = chr(0x4DC0 + gua_index)
         
         return jsonify({
             'success': True,
@@ -172,9 +175,11 @@ def divination():
             'number2': number2,
             'gua_index': gua_index,
             'gua_name': gua_info['name'],
+            'gua_symbol': gua_symbol,
             'gua_description': gua_info['description'],
             'gua_interpretation': gua_info['interpretation']
         })
+
     except Exception as e:
         return jsonify({
             'success': False,
