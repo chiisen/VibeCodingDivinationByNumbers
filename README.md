@@ -25,11 +25,12 @@ VibeCodingDivinationByNumbers/
 # 🚀 技術特點
 後端：Flask 框架，包含完整的易經六十四卦資料  
 前端：響應式設計，流暢動畫效果，支援鍵盤快捷鍵  
-API：RESTful 設計，包含錯誤處理機制  
+API：RESTful 設計（包含 `/api/version` 版本與 Commit 查詢端點）  
+版本：自動整合語意化版本與 Git Short Commit Hash（顯示於頁尾與 API）  
 體驗：載入動畫、數字動畫、淡入效果等  
 # 使用方式
-執行 python app.py 啟動應用  
-訪問 http://localhost:5000  
+執行 `python app.py` 啟動應用  
+存取終端機輸出的網址（預設自動尋找並指派未佔用的隨機 Port，亦可透過 `$env:PORT=5001` 指定 Port）  
 點擊「開始占卜」按鈕  
 查看隨機數字和易經解讀結果  
 可重複進行占卜  

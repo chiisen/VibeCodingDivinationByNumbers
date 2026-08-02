@@ -2,8 +2,33 @@ from flask import Flask, render_template, request, jsonify
 import random
 import json
 import os
+import subprocess
 
 app = Flask(__name__)
+
+APP_VERSION = "1.0.0"
+
+
+def get_git_commit():
+    """獲取當前 Git short commit hash"""
+    try:
+        commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], stderr=subprocess.DEVNULL)
+        return commit.decode('utf-8').strip()
+    except Exception:
+        return None
+
+def get_version_info():
+    """獲取完整版本資訊"""
+    commit = get_git_commit()
+    if commit:
+        return f"v{APP_VERSION} ({commit})"
+    return f"v{APP_VERSION}"
+
+@app.route('/')
+def index():
+    """首頁路由"""
+    return render_template('index.html', version=get_version_info(), app_version=APP_VERSION, git_commit=get_git_commit())
+
 
 # 易經六十四卦資料
 YIJING_GUA = {
@@ -73,10 +98,7 @@ YIJING_GUA = {
     63: {"name": "未濟", "description": "火在水上，未濟，君子以慎辨物居方", "interpretation": "事業未成，繼續努力"}
 }
 
-@app.route('/')
-def index():
-    """首頁路由"""
-    return render_template('index.html')
+
 
 @app.route('/generate', methods=['GET', 'POST'])
 def generate_numbers():
@@ -159,5 +181,43 @@ def divination():
             'error': str(e)
         }), 500
 
+@app.route('/api/version', methods=['GET'])
+
+def get_version():
+    """獲取版本號與 Git commit 資訊"""
+    return jsonify({
+        'success': True,
+        'version': APP_VERSION,
+        'git_commit': get_git_commit(),
+        'full_version': get_version_info()
+    })
+
+import socket
+
+
+def find_available_port(start_port=5001, max_tries=50):
+    """取得可用的通訊埠：預設優先嘗試 5001，若被佔用則順延尋找 5002, 5003..."""
+    for p in range(start_port, start_port + max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(('0.0.0.0', p))
+                return p
+            except OSError:
+                continue
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    env_port = os.environ.get('PORT')
+    if env_port and env_port.isdigit():
+        port = int(env_port)
+    else:
+        # 優先嘗試使用 5001，若佔用則自動順延尋找空閒 Port
+        port = find_available_port(5001)
+
+    print(f"\nServer starting on: http://127.0.0.1:{port}\n")
+    app.run(debug=True, host='0.0.0.0', port=port)
+
+
+

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>易經數字占卜</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -33,7 +35,7 @@
                             <h2>占卜結果</h2>
                             <button id="new-divination" class="btn btn-secondary">重新占卜</button>
                         </div>
-                        
+
                         <div class="numbers-display">
                             <div class="number-item">
                                 <span class="number-label">第一個數字</span>
@@ -91,10 +93,11 @@
         </main>
 
         <footer>
-            <p>&copy; 2025 易經數字占卜應用 | 基於傳統易經文化</p>
+            <p>&copy; 2026 易經數字占卜應用 | 基於傳統易經文化 <span class="version-badge" style="opacity: 0.75; font-size: 0.85em; margin-left: 8px;">{{ version }}</span></p>
         </footer>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
