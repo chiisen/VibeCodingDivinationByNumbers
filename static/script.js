@@ -2,6 +2,115 @@
 const startDivinationBtn = document.getElementById('start-divination');
 const newDivinationBtn = document.getElementById('new-divination');
 const retryDivinationBtn = document.getElementById('retry-divination');
+const exportCardBtn = document.getElementById('export-card-btn');
+
+exportCardBtn?.addEventListener('click', generateDivinationImage);
+
+// 導出開運圖卡 (Canvas 繪製)
+function generateDivinationImage() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 750;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 繪製玄墨背景
+    ctx.fillStyle = '#111215';
+    ctx.fillRect(0, 0, 600, 750);
+
+    // 繪製古金雙邊框
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, 560, 710);
+
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(26, 26, 548, 698);
+
+    // 標題與印章
+    ctx.fillStyle = '#d4af37';
+    ctx.font = '22px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('周易靈數 ‧ 天人合一', 300, 65);
+
+    // 卦符號
+    const symbol = guaSymbolElement?.textContent || '䷀';
+    ctx.font = '90px sans-serif';
+    ctx.fillStyle = '#d4af37';
+    ctx.fillText(symbol, 300, 180);
+
+    // 卦名
+    const guaName = guaNameElement?.textContent || '乾卦';
+    ctx.font = 'bold 36px "Noto Serif TC", serif';
+    ctx.fillStyle = '#f0eee9';
+    ctx.fillText(guaName, 300, 240);
+
+    // 動爻與之卦
+    const movingText = document.getElementById('moving-yao-badge')?.textContent || '';
+    const derivedName = document.getElementById('derived-gua-name')?.textContent || '';
+    ctx.font = '18px "Noto Serif TC", serif';
+    ctx.fillStyle = '#c83e3d';
+    ctx.fillText(`${movingText} ➔ 之 ${derivedName}`, 300, 285);
+
+    // 分隔線
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+    ctx.beginPath();
+    ctx.moveTo(80, 310);
+    ctx.lineTo(520, 310);
+    ctx.stroke();
+
+    // 象傳內容
+    ctx.fillStyle = '#f3e5ab';
+    ctx.font = 'bold 18px "Noto Serif TC", serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('📜 卦象大象傳：', 60, 350);
+
+    ctx.fillStyle = '#c2c0b8';
+    ctx.font = '16px "Noto Serif TC", serif';
+    const descText = guaDescriptionElement?.textContent || '';
+    wrapText(ctx, descText, 60, 385, 480, 26);
+
+    // 占斷啟示
+    ctx.fillStyle = '#c83e3d';
+    ctx.font = 'bold 18px "Noto Serif TC", serif';
+    ctx.fillText('💡 占斷啟示：', 60, 480);
+
+    ctx.fillStyle = '#e6e4df';
+    ctx.font = '16px "Noto Serif TC", serif';
+    const interpText = guaInterpretationElement?.textContent || '';
+    wrapText(ctx, interpText, 60, 515, 480, 26);
+
+    // 頁尾落款
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#8c8980';
+    ctx.font = '14px "Noto Serif TC", serif';
+    ctx.fillText('易經數理占卜 ‧ 典藏靈符', 300, 690);
+
+    // 下載圖片
+    const link = document.createElement('a');
+    link.download = `易經占卜_${guaName}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    let words = text.split('');
+    let line = '';
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n];
+        let metrics = ctx.measureText(testLine);
+        let testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n];
+            y += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+}
+
 
 const welcomeCard = document.getElementById('welcome-card');
 const resultCard = document.getElementById('result-card');
