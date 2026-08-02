@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 新增 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) (Closes #2)。
 - 導入 TDD (Test-Driven Development) 單元測試架構 (`tests/test_app.py`) (Closes #1)。
+
 - 在 `requirements.txt` 新增 `pytest` 套件支援。
 - 新增首頁、版本查詢 API、隨機起卦、卦象解讀與 400 邊界條件之自動化測試。
 

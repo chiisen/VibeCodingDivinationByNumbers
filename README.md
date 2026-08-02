@@ -4,6 +4,9 @@ Vibe Coding Divination By Numbers
 
 ![one01](./images/one01.png)
 
+![CI Test Suite](https://github.com/chiisen/VibeCodingDivinationByNumbers/actions/workflows/ci.yml/badge.svg)
+
+
 [PRD](PRD.md)
 
 # PYTHON 🎯 核心功能（已完成）
