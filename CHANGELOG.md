@@ -6,7 +6,9 @@
 ## [1.1.0] - 2026-08-02
 
 ### 新增 (Added)
+- 新增 GitHub Issue 與 Pull Request 標準驗收範本 (`.github/ISSUE_TEMPLATE`, `.github/PULL_REQUEST_TEMPLATE.md`) (Closes #4)。
 - 導入 API 參數嚴格型別校驗與 Fail-Fast 錯誤處理機制 (Closes #3)。
+
 - 新增 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) (Closes #2)。
 
 - 導入 TDD (Test-Driven Development) 單元測試架構 (`tests/test_app.py`) (Closes #1)。
