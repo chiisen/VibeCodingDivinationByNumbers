@@ -4,6 +4,9 @@
 本格式基於 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)。
 ## [Unreleased]
 
+### 新增 (Added)
+- 結果面板新增明確的「↺ 重新起卦 (R)」視覺按鈕，並保留 `[ R ]` 快捷鍵操作與輸入框防誤觸保護 (Closes #13)。
+
 ### 移除 (Removed)
 - 移除 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) 與 README 中的 CI 狀態徽章。
 

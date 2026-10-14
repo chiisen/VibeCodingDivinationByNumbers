@@ -110,6 +110,22 @@ def test_health_check_api(client):
     assert 'uptime_seconds' in data
     assert data['uptime_seconds'] >= 0
 
+def test_index_has_restart_button(client):
+    """測試結果面板具備明確的「↺ 重新起卦 (R)」視覺按鈕 (Issue #13)"""
+    response = client.get('/')
+    assert response.status_code == 200
+    html = response.data.decode('utf-8')
+    assert 'id="restart-divination"' in html
+    assert '重新起卦' in html
+
+def test_script_binds_restart_button_and_hotkey(client):
+    """測試 script.js 同時綁定重新起卦按鈕與 [ R ] 快捷鍵 (Issue #13)"""
+    response = client.get('/static/script.js')
+    assert response.status_code == 200
+    js = response.data.decode('utf-8')
+    assert "getElementById('restart-divination')" in js
+    assert 'KeyR' in js
+
 
 
 

@@ -334,6 +334,23 @@ body {
     margin-top: 24px;
 }
 
+/* 重新起卦明確視覺按鈕 (Issue #13) */
+.restart-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--border-dark);
+    text-align: center;
+}
+
+.restart-btn {
+    font-size: 1rem;
+    padding: 12px 34px;
+}
+
 /* 數理感應顯示區 */
 .numbers-display {
     display: flex;

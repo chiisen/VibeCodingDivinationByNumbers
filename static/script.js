@@ -132,15 +132,20 @@ startDivinationBtn?.addEventListener('click', performDivination);
 newDivinationBtn?.addEventListener('click', performDivination);
 retryDivinationBtn?.addEventListener('click', performDivination);
 
+// 結果面板之「↺ 重新起卦 (R)」視覺按鈕 (Issue #13)
+const restartDivinationBtn = document.getElementById('restart-divination');
+restartDivinationBtn?.addEventListener('click', performDivination);
+
 // 鍵盤快捷鍵支援
 document.addEventListener('keydown', function(e) {
+    const isTyping = document.activeElement && document.activeElement.tagName === 'INPUT';
     // 按 Space 鍵 (空白鍵) 開始或重新起卦
-    if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') {
+    if (e.code === 'Space' && !e.repeat && !isTyping) {
         e.preventDefault();
         performDivination();
     }
-    // 按 R 鍵重新起卦
-    if ((e.code === 'KeyR' || e.key === 'r' || e.key === 'R') && !e.repeat) {
+    // 按 R 鍵重新起卦 (與「↺ 重新起卦 (R)」按鈕行為一致)
+    if ((e.code === 'KeyR' || e.key === 'r' || e.key === 'R') && !e.repeat && !isTyping) {
         performDivination();
     }
 });
