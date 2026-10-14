@@ -173,8 +173,38 @@ modeCustomBtn?.addEventListener('click', () => {
     customPanel.classList.remove('hidden');
 });
 
+// 音效開關與 LocalStorage 持久化 (Issue #15)
+const SOUND_STORAGE_KEY = 'yijing_sound_enabled';
+const soundToggleBtn = document.getElementById('sound-toggle');
+
+let soundEnabled = true;
+try {
+    soundEnabled = localStorage.getItem(SOUND_STORAGE_KEY) !== 'false';
+} catch (e) {
+    console.log('讀取音效設定失敗:', e);
+}
+
+function applySoundState() {
+    if (!soundToggleBtn) return;
+    soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔇';
+    soundToggleBtn.setAttribute('aria-pressed', String(soundEnabled));
+    soundToggleBtn.classList.toggle('muted', !soundEnabled);
+    soundToggleBtn.title = soundEnabled ? '音效已開啟（點擊靜音）' : '音效已靜音（點擊開啟）';
+}
+
+soundToggleBtn?.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    try {
+        localStorage.setItem(SOUND_STORAGE_KEY, String(soundEnabled));
+    } catch (e) {
+        console.log('儲存音效設定失敗:', e);
+    }
+    applySoundState();
+});
+
 // Web Audio API 原生古磬起卦音效 (432Hz)
 function playZenChimeSound() {
+    if (!soundEnabled) return;
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
@@ -455,6 +485,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 頁面載入時初始化歷史紀錄
     renderHistory();
+
+    // 頁面載入時套用音效開關狀態 (Issue #15)
+    applySoundState();
 
     // Service Worker PWA 離線註冊
 

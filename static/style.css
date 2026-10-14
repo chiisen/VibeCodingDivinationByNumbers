@@ -84,6 +84,44 @@ body {
     z-index: 1;
 }
 
+/* 右上角工具列與音效切換按鈕 (Issue #15) */
+.top-controls {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.top-control-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    color: var(--gold-light);
+    font-size: 1.15rem;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.top-control-btn:hover {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 18px var(--gold-glow);
+    transform: translateY(-1px);
+}
+
+.top-control-btn.muted {
+    color: var(--text-muted);
+    border-color: var(--border-dark);
+}
+
 /* 頁首東方風格 */
 .zen-header {
     text-align: center;
