@@ -2,10 +2,12 @@ import pytest
 from app import (
     app,
     YIJING_GUA,
+    YIJING_GUA_EN,
     APP_VERSION,
     calculate_moving_yaos,
     calculate_derived_index,
     judge_moving_yaos,
+    build_divination_payload,
 )
 
 @pytest.fixture
@@ -230,6 +232,92 @@ def test_script_persists_sound_state(client):
     assert "localStorage.getItem(SOUND_STORAGE_KEY)" in js
     # 靜音時須提前返回，不建立 AudioContext
     assert 'if (!soundEnabled) return;' in js
+
+def test_english_gua_database_completeness():
+    """測試 64 卦英文對照資料庫完整且與中文資料索引一致 (Issue #16)"""
+    assert len(YIJING_GUA) == 64
+    assert len(YIJING_GUA_EN) == 64
+    assert set(YIJING_GUA.keys()) == set(YIJING_GUA_EN.keys())
+    for idx, info in YIJING_GUA_EN.items():
+        for field in ('name', 'description', 'interpretation'):
+            assert info[field].strip(), f"英文資料 index {idx} 缺少 {field}"
+        assert info['name'] != YIJING_GUA[idx]['name']
+
+def test_divination_payload_lang_en():
+    """測試英文語系之完整回應內容 (Issue #16)"""
+    payload = build_divination_payload(8, 5, lang='en')
+    assert payload['lang'] == 'en'
+    assert payload['gua_name'] == YIJING_GUA_EN[13]['name']
+    assert payload['gua_description'] == YIJING_GUA_EN[13]['description']
+    assert payload['gua_interpretation'] == YIJING_GUA_EN[13]['interpretation']
+    assert payload['derived_gua_name'] == YIJING_GUA_EN[51]['name']
+    assert payload['moving_yao_count'] == 5
+    assert all('line' in name.lower() for name in payload['moving_yao_names'])
+    assert payload['judgment_rule'] == 'Five moving lines'
+    assert 'derived hexagram' in payload['judgment_primary']
+    # 英文判辭來源須避免 "Second line line text" 疊字，並以分隔符連接 (Issue #16)
+    assert 'line text' not in payload['judgment_primary']
+    assert 'statement' in payload['judgment_primary']
+
+def test_default_lang_is_traditional_chinese():
+    """測試未指定語系時，維持繁體中文預設行為 (Issue #16)"""
+    payload = build_divination_payload(8, 5)
+    assert payload['lang'] == 'zh'
+    assert payload['gua_name'] == YIJING_GUA[13]['name']
+    assert payload['judgment_rule'] == '五爻變'
+
+def test_interpret_api_lang_query(client):
+    """測試 /interpret 支援 ?lang=en 查詢參數 (Issue #16)"""
+    response = client.post('/interpret?lang=en', json={'number1': 21, 'number2': 47})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['lang'] == 'en'
+    assert data['gua_index'] == 4
+    assert data['gua_name'] == YIJING_GUA_EN[4]['name']
+
+def test_interpret_api_lang_body(client):
+    """測試 /interpret 支援 JSON body 指定 lang (Issue #16)"""
+    response = client.post('/interpret', json={'number1': 21, 'number2': 47, 'lang': 'en'})
+    assert response.status_code == 200
+    assert response.get_json()['lang'] == 'en'
+
+def test_divination_api_lang_en(client):
+    """測試 /divination 支援英文語系 (Issue #16)"""
+    response = client.post('/divination?lang=en')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['lang'] == 'en'
+    assert data['gua_name'] == YIJING_GUA_EN[data['gua_index']]['name']
+    assert data['derived_gua_name'] == YIJING_GUA_EN[data['derived_gua_index']]['name']
+
+def test_invalid_lang_returns_400(client):
+    """測試不支援語系之 Fail-Fast 400 錯誤處理 (Issue #16)"""
+    response = client.post('/interpret', json={'number1': 21, 'number2': 47, 'lang': 'jp'})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['success'] is False
+    assert "'lang'" in data['error']
+
+def test_index_has_language_toggle(client):
+    """測試 UI 具備語系切換按鈕與 i18n 標記 (Issue #16)"""
+    html = client.get('/').data.decode('utf-8')
+    assert 'id="lang-toggle"' in html
+    assert 'data-i18n="header.title"' in html
+
+def test_script_has_i18n_dictionary(client):
+    """測試 script.js 內含 i18n 字典、語系持久化與套用函式 (Issue #16)"""
+    js = client.get('/static/script.js').data.decode('utf-8')
+    assert 'yijing_lang' in js
+    assert 'const I18N' in js
+    assert 'applyLanguage' in js
+    assert "'en'" in js
+
+def test_script_sound_toggle_title_is_localized(client):
+    """測試音效開關提示文字隨語系切換，不殘留硬編碼中文 (Issue #16)"""
+    js = client.get('/static/script.js').data.decode('utf-8')
+    assert "'sound.onTitle'" in js
+    assert "'sound.offTitle'" in js
+    assert "soundToggleBtn.title = soundEnabled ? t('sound.onTitle') : t('sound.offTitle');" in js
 
 
 

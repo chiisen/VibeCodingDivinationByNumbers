@@ -33,6 +33,24 @@ def validate_number_param(val: Any, param_name: str, min_val: int = 1, max_val: 
         return None, f"'{param_name}' 必須為有效整數"
 
 
+def validate_lang_param(val: Any) -> Tuple[Optional[str], Optional[str]]:
+    """驗證語系參數，僅支援 zh / en，未指定時預設繁體中文 (i18n, Issue #16)"""
+    if val is None or val == '':
+        return 'zh', None
+    lang = str(val).lower()
+    if lang not in SUPPORTED_LANGS:
+        return None, f"'lang' 僅支援 {' / '.join(SUPPORTED_LANGS)}"
+    return lang, None
+
+
+def resolve_request_lang(data: Optional[Dict[str, Any]] = None) -> Tuple[Optional[str], Optional[str]]:
+    """由查詢字串 (?lang=en) 或 JSON body 解析語系參數 (i18n, Issue #16)"""
+    raw = request.args.get('lang')
+    if raw is None and isinstance(data, dict):
+        raw = data.get('lang')
+    return validate_lang_param(raw)
+
+
 def get_git_commit() -> Optional[str]:
 
     """獲取當前 Git short commit hash"""
@@ -123,6 +141,84 @@ YIJING_GUA = {
     63: {"name": "未濟", "description": "火在水上，未濟，君子以慎辨物居方", "interpretation": "事業未成，繼續努力"}
 }
 
+# 易經六十四卦英文對照資料 (i18n, Issue #16)
+YIJING_GUA_EN = {
+    0: {"name": "Qian · The Creative", "description": "Heaven in its motion: the noble one strives ceaselessly", "interpretation": "Great fortune; advance with vigor; a good time to break new ground"},
+    1: {"name": "Kun · The Receptive", "description": "The condition of the earth: the noble one carries all things with broad virtue", "interpretation": "Follow nature; overcome hardness with softness; steady development"},
+    2: {"name": "Zhun · Difficulty at the Beginning", "description": "Clouds and thunder: the noble one brings order out of confusion", "interpretation": "Hardship at the beginning; patience and perseverance are needed"},
+    3: {"name": "Meng · Youthful Folly", "description": "A spring below the mountain: the noble one nurtures virtue through resolute action", "interpretation": "A stage of learning; guidance and teaching are needed"},
+    4: {"name": "Xu · Waiting", "description": "Clouds rise above heaven: the noble one feasts and takes joy", "interpretation": "Wait for the right moment; do not be impatient"},
+    5: {"name": "Song · Conflict", "description": "Heaven and water move apart: the noble one plans carefully at the outset", "interpretation": "Avoid litigation; harmony is precious"},
+    6: {"name": "Shi · The Army", "description": "Water within the earth: the noble one embraces and nurtures the people", "interpretation": "Unite as one; many wills make a strong city"},
+    7: {"name": "Bi · Holding Together", "description": "Water upon the earth: the noble one builds alliances with the lords", "interpretation": "Draw close to others; build good relationships"},
+    8: {"name": "Xiao Chu · Small Taming", "description": "Wind above heaven: the noble one cultivates refined virtue", "interpretation": "Small accumulations; advance steadily"},
+    9: {"name": "Lu · Treading", "description": "Heaven above, the marsh below: the noble one distinguishes rank and settles the will of the people", "interpretation": "Act with care; observe propriety"},
+    10: {"name": "Tai · Peace", "description": "Heaven and earth in union: the noble one completes the work of heaven and earth", "interpretation": "Great peace; all things prosper"},
+    11: {"name": "Pi · Standstill", "description": "Heaven and earth do not meet: the noble one retreats in frugal virtue", "interpretation": "Unfavorable times; bide your time in concealment"},
+    12: {"name": "Tong Ren · Fellowship with Men", "description": "Heaven with fire: the noble one distinguishes things by kind", "interpretation": "Unity and cooperation; like-minded companions"},
+    13: {"name": "Da You · Possession in Great Measure", "description": "Fire above heaven: the noble one suppresses evil and promotes good", "interpretation": "Great gains; remain humble"},
+    14: {"name": "Qian · Modesty", "description": "A mountain within the earth: the noble one reduces excess and augments the modest", "interpretation": "Modesty is beauty; keep a humble heart"},
+    15: {"name": "Yu · Enthusiasm", "description": "Thunder comes forth from the earth: the noble one makes music and honors virtue", "interpretation": "A joyful mood; a time for celebration"},
+    16: {"name": "Sui · Following", "description": "Thunder within the marsh: the noble one rests when night falls", "interpretation": "Follow nature; move with the times"},
+    17: {"name": "Gu · Work on the Decayed", "description": "Wind below the mountain: the noble one stirs the people and nurtures virtue", "interpretation": "Sweep away the old; reform and renew"},
+    18: {"name": "Lin · Approach", "description": "Earth above the marsh: the noble one teaches with tireless thought", "interpretation": "Facing a challenge; wisdom is required"},
+    19: {"name": "Guan · Contemplation", "description": "Wind over the earth: the noble one surveys the realm and sets up teaching", "interpretation": "Observe and reflect; learn and grow"},
+    20: {"name": "Shi He · Biting Through", "description": "Thunder and lightning: the former kings clarified punishments and statutes", "interpretation": "Overcome difficulties; decisiveness is needed"},
+    21: {"name": "Bi · Grace", "description": "Fire below the mountain: the noble one illuminates governance, daring not to judge", "interpretation": "Adornment and refinement; attend to appearances"},
+    22: {"name": "Bo · Splitting Apart", "description": "The mountain rests upon the earth: the noble one secures the foundation", "interpretation": "Gradual decline; be cautious"},
+    23: {"name": "Fu · Return", "description": "Thunder within the earth: the noble one closes the passes at the solstice", "interpretation": "Begin anew; the cycle returns"},
+    24: {"name": "Wu Wang · Innocence", "description": "Thunder moves under heaven: the former kings nurtured all things in season", "interpretation": "Truthful and uncontrived; act naturally"},
+    25: {"name": "Da Xu · The Taming Power of the Great", "description": "Heaven within the mountain: the noble one learns the words and deeds of the past", "interpretation": "Great accumulation; store up wisdom"},
+    26: {"name": "Yi · The Corners of the Mouth", "description": "Thunder below the mountain: the noble one is careful in speech and temperate in eating", "interpretation": "Cultivate body and mind; restrain desire"},
+    27: {"name": "Da Guo · Preponderance of the Great", "description": "The marsh submerges the wood: the noble one stands alone without fear", "interpretation": "Excess in action; adjustment is needed"},
+    28: {"name": "Kan · The Abysmal Water", "description": "Water flows on and on: the noble one practices constancy of virtue", "interpretation": "Repeated hardship; perseverance is required"},
+    29: {"name": "Li · The Clinging Fire", "description": "Brightness doubled: the noble one continues the light over the four quarters", "interpretation": "Brightness shines; wisdom is awakened"},
+    30: {"name": "Xian · Influence", "description": "A marsh on the mountain: the noble one receives others with emptiness", "interpretation": "Mutual response; hearts in accord"},
+    31: {"name": "Heng · Duration", "description": "Thunder and wind: the noble one stands firm and does not change direction", "interpretation": "Enduring constancy; persevere"},
+    32: {"name": "Dun · Retreat", "description": "Heaven above the mountain: the noble one keeps distance from the petty without rancor", "interpretation": "Withdraw and yield; stay clear of the petty"},
+    33: {"name": "Da Zhuang · The Power of the Great", "description": "Thunder above heaven: the noble one does not tread what is not proper", "interpretation": "Great strength, but propriety must be kept"},
+    34: {"name": "Jin · Progress", "description": "The sun rises above the earth: the noble one makes bright his virtue", "interpretation": "Advance and develop; open and upright"},
+    35: {"name": "Ming Yi · Darkening of the Light", "description": "Light enters the earth: the noble one governs the people by veiling his brightness", "interpretation": "The light is wounded; conceal your brilliance"},
+    36: {"name": "Jia Ren · The Family", "description": "Wind comes forth from fire: the noble one speaks with substance and acts with constancy", "interpretation": "Domestic harmony; words and deeds as one"},
+    37: {"name": "Kui · Opposition", "description": "Fire above, the marsh below: the noble one unites through difference", "interpretation": "Divergent views; reconciliation is needed"},
+    38: {"name": "Jian · Obstruction", "description": "Water on the mountain: the noble one turns inward and cultivates virtue", "interpretation": "The road is hard; self-examination is needed"},
+    39: {"name": "Jie · Deliverance", "description": "Thunder and rain: the noble one pardons faults and forgives offenses", "interpretation": "Difficulties dissolve; forgive and embrace"},
+    40: {"name": "Sun · Decrease", "description": "A marsh below the mountain: the noble one curbs anger and restrains desire", "interpretation": "Reduce losses; master the emotions"},
+    41: {"name": "Yi · Increase", "description": "Wind and thunder: the noble one moves toward good and corrects faults", "interpretation": "Growth and gain; reform your faults"},
+    42: {"name": "Guai · Breakthrough", "description": "The marsh rises to heaven: the noble one bestows favors below", "interpretation": "Resolute decision, yet with caution"},
+    43: {"name": "Gou · Coming to Meet", "description": "Wind under heaven: the noble one proclaims commands to the four quarters", "interpretation": "An encounter of chance; choose wisely"},
+    44: {"name": "Cui · Gathering Together", "description": "A marsh over the earth: the noble one prepares weapons and guards against the unforeseen", "interpretation": "Gather strength; prepare for the unexpected"},
+    45: {"name": "Sheng · Pushing Upward", "description": "Wood grows within the earth: the noble one accumulates the small to reach the high", "interpretation": "Rise and develop; advance step by step"},
+    46: {"name": "Kun · Oppression", "description": "The marsh has no water: the noble one stakes his life on his will", "interpretation": "Hardship and want; hold fast to your aim"},
+    47: {"name": "Jing · The Well", "description": "Water above wood: the noble one labors for the people and encourages mutual aid", "interpretation": "The well never runs dry; joy in helping others"},
+    48: {"name": "Ge · Revolution", "description": "Fire within the marsh: the noble one orders the calendar and clarifies the seasons", "interpretation": "Transform and renew; follow the times"},
+    49: {"name": "Ding · The Cauldron", "description": "Fire above wood: the noble one steadies his place and consolidates his mandate", "interpretation": "Steadiness and weight; hold your position"},
+    50: {"name": "Zhen · The Arousing Thunder", "description": "Thunder repeated: the noble one examines himself in fear and trembling", "interpretation": "Thunder shakes; awaken and reflect"},
+    51: {"name": "Gen · Keeping Still, Mountain", "description": "Mountains joined: the noble one does not let his thoughts stray from his place", "interpretation": "Be still; keep to your own place"},
+    52: {"name": "Jian · Development", "description": "Wood on the mountain: the noble one dwells in virtue and improves custom", "interpretation": "Advance gradually; cultivate character"},
+    53: {"name": "Gui Mei · The Marrying Maiden", "description": "Thunder over the marsh: the noble one knows the decay of endings", "interpretation": "A question of belonging; be cautious"},
+    54: {"name": "Feng · Abundance", "description": "Thunder and lightning both arrive: the noble one decides cases and carries out punishments", "interpretation": "Abundance and wealth, but justice is needed"},
+    55: {"name": "Lu · The Wanderer", "description": "Fire on the mountain: the noble one is clear and careful in punishment", "interpretation": "Adrift and unsettled; be cautious"},
+    56: {"name": "Xun · The Gentle Wind", "description": "Wind following wind: the noble one spreads commands and carries out affairs", "interpretation": "Move with the wind; carry out your orders"},
+    57: {"name": "Dui · The Joyous Lake", "description": "Joined marshes: the noble one joins friends in discussion and practice", "interpretation": "Joyful exchange; learning and progress"},
+    58: {"name": "Huan · Dispersion", "description": "Wind over water: the noble one offers sacrifice to the Lord and establishes temples", "interpretation": "Scattering and dispersal; unity is needed"},
+    59: {"name": "Jie · Limitation", "description": "Water above the marsh: the noble one sets measure and discusses virtue", "interpretation": "Restraint and moderation; proceed in due measure"},
+    60: {"name": "Zhong Fu · Inner Truth", "description": "Wind over the marsh: the noble one deliberates on cases and delays execution", "interpretation": "Sincerity and centeredness; forgive and embrace"},
+    61: {"name": "Xiao Guo · Preponderance of the Small", "description": "Thunder on the mountain: the noble one exceeds in reverence", "interpretation": "Small faults; be cautious"},
+    62: {"name": "Ji Ji · After Completion", "description": "Water above fire: the noble one thinks of calamity and guards against it", "interpretation": "The work is done; guard against trouble"},
+    63: {"name": "Wei Ji · Before Completion", "description": "Fire above water: the noble one carefully distinguishes things and places them", "interpretation": "The work is not yet done; keep striving"}
+}
+
+# 支援語系 (i18n, Issue #16)
+SUPPORTED_LANGS = ('zh', 'en')
+
+YAO_NAMES_EN = ['Initial line', 'Second line', 'Third line', 'Fourth line', 'Fifth line', 'Top line']
+
+
+def get_gua_info(gua_index: int, lang: str = 'zh') -> Dict[str, str]:
+    """依語系取得卦象資料 (支援 zh / en)"""
+    return (YIJING_GUA_EN if lang == 'en' else YIJING_GUA)[gua_index]
+
 
 
 @app.route('/generate', methods=['GET', 'POST'])
@@ -147,14 +243,22 @@ def generate_numbers():
 YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻']
 
 # 朱熹《易學啟蒙》變占法則：依動爻數量判定主要判辭來源
-JUDGMENT_RULES: Dict[int, Tuple[str, str]] = {
-    0: ("六爻皆靜", "以本卦卦辭為占"),
-    1: ("一爻變", "以本卦該動爻之爻辭為占"),
-    2: ("二爻變", "以本卦兩動爻之爻辭為占，以上爻為主"),
-    3: ("三爻變", "以本卦與之卦卦辭合占，以本卦為貞（主）、之卦為悔（輔）"),
-    4: ("四爻變", "以之卦中兩不變爻之爻辭為占，以下爻為主"),
-    5: ("五爻變", "以之卦中唯一不變爻之爻辭為占"),
-    6: ("六爻變", "乾卦以用九、坤卦以用六為占，其餘以之卦卦辭為占"),
+# 每項為 (中文法則名, 中文判辭說明, English rule name, English rule text)
+JUDGMENT_RULES: Dict[int, Tuple[str, str, str, str]] = {
+    0: ("六爻皆靜", "以本卦卦辭為占",
+        "All lines still", "Judge by the Judgment of the primary hexagram"),
+    1: ("一爻變", "以本卦該動爻之爻辭為占",
+        "One moving line", "Judge by the line text of that moving line in the primary hexagram"),
+    2: ("二爻變", "以本卦兩動爻之爻辭為占，以上爻為主",
+        "Two moving lines", "Judge by the two moving lines of the primary hexagram, the upper one governing"),
+    3: ("三爻變", "以本卦與之卦卦辭合占，以本卦為貞（主）、之卦為悔（輔）",
+        "Three moving lines", "Judge by both Judgments: the primary hexagram as zhen (leading), the derived as hui (supporting)"),
+    4: ("四爻變", "以之卦中兩不變爻之爻辭為占，以下爻為主",
+        "Four moving lines", "Judge by the two unmoved lines of the derived hexagram, the lower one governing"),
+    5: ("五爻變", "以之卦中唯一不變爻之爻辭為占",
+        "Five moving lines", "Judge by the single unmoved line of the derived hexagram"),
+    6: ("六爻變", "乾卦以用九、坤卦以用六為占，其餘以之卦卦辭為占",
+        "Six moving lines", "For Qian use Nine, for Kun use Six; otherwise judge by the Judgment of the derived hexagram"),
 }
 
 
@@ -173,43 +277,66 @@ def calculate_derived_index(gua_index: int, moving_yaos) -> int:
     return gua_index ^ mask
 
 
-def judge_moving_yaos(moving_yaos, gua_index: int, derived_index: int) -> Dict[str, Any]:
-    """依朱熹《易學啟蒙》變占法則，判定本次占卜之主要判辭依據"""
+def judge_moving_yaos(moving_yaos, gua_index: int, derived_index: int, lang: str = 'zh') -> Dict[str, Any]:
+    """依朱熹《易學啟蒙》變占法則，判定本次占卜之主要判辭依據 (支援 zh / en)"""
     positions = sorted({int(p) for p in moving_yaos})
     count = len(positions)
     if count not in JUDGMENT_RULES:
         raise ValueError(f"動爻數量必須介於 0 至 6 之間，收到 {count}")
 
-    rule_name, rule_text = JUDGMENT_RULES[count]
-    gua_name = YIJING_GUA[gua_index]['name']
-    derived_name = YIJING_GUA[derived_index]['name']
+    is_en = (lang == 'en')
+    rule = JUDGMENT_RULES[count]
+    rule_name, rule_text = (rule[2], rule[3]) if is_en else (rule[0], rule[1])
+
+    gua_name = get_gua_info(gua_index, lang)['name']
+    derived_name = get_gua_info(derived_index, lang)['name']
+    yao_names = YAO_NAMES_EN if is_en else YAO_NAMES
+
+    if is_en:
+        primary_ref = f'primary hexagram "{gua_name}"'
+        derived_ref = f'derived hexagram "{derived_name}"'
+        judgment_word = ' · Judgment'
+        main_tag, aux_tag = ' (governing)', ' (supporting)'
+        zhen_tag, hui_tag = ' (zhen / leading)', ' (hui / supporting)'
+    else:
+        primary_ref = f"本卦《{gua_name}》"
+        derived_ref = f"之卦《{derived_name}》"
+        judgment_word = '卦辭'
+        main_tag, aux_tag = '（主）', '（輔）'
+        zhen_tag, hui_tag = '（貞／主）', '（悔／輔）'
+
+    def line_ref(position: int) -> str:
+        return f' · {yao_names[position - 1]} statement' if is_en else f'{yao_names[position - 1]}爻辭'
+
     primary_source: Optional[str] = None
     secondary_source: Optional[str] = None
 
     if count == 0:
-        primary_source = f"本卦《{gua_name}》卦辭"
+        primary_source = f"{primary_ref}{judgment_word}"
     elif count == 1:
-        primary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[0] - 1]}爻辭"
+        primary_source = f"{primary_ref}{line_ref(positions[0])}"
     elif count == 2:
-        primary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[-1] - 1]}爻辭（主）"
-        secondary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[-2] - 1]}爻辭（輔）"
+        primary_source = f"{primary_ref}{line_ref(positions[-1])}{main_tag}"
+        secondary_source = f"{primary_ref}{line_ref(positions[-2])}{aux_tag}"
     elif count == 3:
-        primary_source = f"本卦《{gua_name}》卦辭（貞／主）"
-        secondary_source = f"之卦《{derived_name}》卦辭（悔／輔）"
+        primary_source = f"{primary_ref}{judgment_word}{zhen_tag}"
+        secondary_source = f"{derived_ref}{judgment_word}{hui_tag}"
     elif count == 4:
         unchanged = [p for p in range(1, 7) if p not in positions]
-        primary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[0] - 1]}爻辭（主）"
-        secondary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[1] - 1]}爻辭（輔）"
+        primary_source = f"{derived_ref}{line_ref(unchanged[0])}{main_tag}"
+        secondary_source = f"{derived_ref}{line_ref(unchanged[1])}{aux_tag}"
     elif count == 5:
         unchanged = [p for p in range(1, 7) if p not in positions]
-        primary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[0] - 1]}爻辭"
+        primary_source = f"{derived_ref}{line_ref(unchanged[0])}"
     else:
         if gua_index == 0:
-            primary_source = "乾卦 用九：「見群龍無首，吉」"
+            primary_source = ('Qian: Use Nine — "There appears a flight of dragons without heads. Good fortune."'
+                              if is_en else '乾卦 用九：「見群龍無首，吉」')
         elif gua_index == 1:
-            primary_source = "坤卦 用六：「利永貞」"
+            primary_source = ('Kun: Use Six — "Favorable to be steadfast forever."'
+                              if is_en else '坤卦 用六：「利永貞」')
         else:
-            primary_source = f"之卦《{derived_name}》卦辭"
+            primary_source = f"{derived_ref}{judgment_word}"
 
     return {
         'moving_count': count,
@@ -220,18 +347,20 @@ def judge_moving_yaos(moving_yaos, gua_index: int, derived_index: int) -> Dict[s
     }
 
 
-def build_divination_payload(number1: int, number2: int) -> Dict[str, Any]:
-    """依兩數建構完整卦象回應資料 (本卦 ➔ 多爻變 ➔ 之卦 ➔ 變占判法)"""
+def build_divination_payload(number1: int, number2: int, lang: str = 'zh') -> Dict[str, Any]:
+    """依兩數建構完整卦象回應資料 (本卦 ➔ 多爻變 ➔ 之卦 ➔ 變占判法，支援 zh / en)"""
     gua_index = (number1 + number2) % 64
-    gua_info = YIJING_GUA[gua_index]
+    gua_info = get_gua_info(gua_index, lang)
 
     moving_yaos = calculate_moving_yaos(number1, number2)
     derived_index = calculate_derived_index(gua_index, moving_yaos)
-    derived_info = YIJING_GUA[derived_index]
-    judgment = judge_moving_yaos(moving_yaos, gua_index, derived_index)
+    derived_info = get_gua_info(derived_index, lang)
+    judgment = judge_moving_yaos(moving_yaos, gua_index, derived_index, lang)
+    yao_names = YAO_NAMES_EN if lang == 'en' else YAO_NAMES
 
     return {
         'success': True,
+        'lang': lang,
         'number1': number1,
         'number2': number2,
         'gua_index': gua_index,
@@ -240,9 +369,9 @@ def build_divination_payload(number1: int, number2: int) -> Dict[str, Any]:
         'gua_description': gua_info['description'],
         'gua_interpretation': gua_info['interpretation'],
         'moving_yao_num': moving_yaos[0],
-        'moving_yao_name': YAO_NAMES[moving_yaos[0] - 1],
+        'moving_yao_name': yao_names[moving_yaos[0] - 1],
         'moving_yaos': moving_yaos,
-        'moving_yao_names': [YAO_NAMES[p - 1] for p in moving_yaos],
+        'moving_yao_names': [yao_names[p - 1] for p in moving_yaos],
         'moving_yao_count': len(moving_yaos),
         'judgment_rule': judgment['judgment_rule'],
         'judgment_text': judgment['judgment_text'],
@@ -256,11 +385,15 @@ def build_divination_payload(number1: int, number2: int) -> Dict[str, Any]:
 
 @app.route('/interpret', methods=['POST'])
 def interpret_numbers():
-    """根據兩個數字進行易經解讀 (含本卦、多爻變與之卦演算)"""
+    """根據兩個數字進行易經解讀 (含本卦、多爻變與之卦演算，支援 zh / en)"""
     try:
         data = request.get_json() or {}
         raw1 = data.get('number1')
         raw2 = data.get('number2')
+
+        lang, lang_err = resolve_request_lang(data)
+        if lang_err:
+            return jsonify({'success': False, 'error': lang_err}), 400
 
         num1, err1 = validate_number_param(raw1, 'number1')
         if err1:
@@ -270,7 +403,7 @@ def interpret_numbers():
         if err2:
             return jsonify({'success': False, 'error': err2}), 400
 
-        return jsonify(build_divination_payload(num1, num2))
+        return jsonify(build_divination_payload(num1, num2, lang))
     except Exception as e:
         return jsonify({
             'success': False,
@@ -279,12 +412,18 @@ def interpret_numbers():
 
 @app.route('/divination', methods=['POST'])
 def divination():
-    """一次性完成占卜：生成數字並解讀 (含本卦、多爻變與之卦)"""
+    """一次性完成占卜：生成數字並解讀 (含本卦、多爻變與之卦，支援 zh / en)"""
     try:
+        data = request.get_json(silent=True) or {}
+
+        lang, lang_err = resolve_request_lang(data)
+        if lang_err:
+            return jsonify({'success': False, 'error': lang_err}), 400
+
         number1 = random.randint(1, 100)
         number2 = random.randint(1, 100)
 
-        return jsonify(build_divination_payload(number1, number2))
+        return jsonify(build_divination_payload(number1, number2, lang))
     except Exception as e:
         return jsonify({
             'success': False,
