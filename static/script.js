@@ -31,7 +31,7 @@ function generateDivinationImage() {
     ctx.fillStyle = '#d4af37';
     ctx.font = '22px "Noto Serif TC", serif';
     ctx.textAlign = 'center';
-    ctx.fillText('周易靈數 ‧ 天人合一', 300, 65);
+    ctx.fillText(t('export.title'), 300, 65);
 
     // 卦符號
     const symbol = guaSymbolElement?.textContent || '䷀';
@@ -50,7 +50,8 @@ function generateDivinationImage() {
     const derivedName = document.getElementById('derived-gua-name')?.textContent || '';
     ctx.font = '18px "Noto Serif TC", serif';
     ctx.fillStyle = '#c83e3d';
-    ctx.fillText(`${movingText} ➔ 之 ${derivedName}`, 300, 285);
+    const derivedConnector = currentLang === 'en' ? '➔ ' : '➔ 之 ';
+    ctx.fillText(`${movingText} ${derivedConnector}${derivedName}`, 300, 285);
 
     // 分隔線
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
@@ -63,7 +64,7 @@ function generateDivinationImage() {
     ctx.fillStyle = '#f3e5ab';
     ctx.font = 'bold 18px "Noto Serif TC", serif';
     ctx.textAlign = 'left';
-    ctx.fillText('📜 卦象大象傳：', 60, 350);
+    ctx.fillText(t('export.imageLabel'), 60, 350);
 
     ctx.fillStyle = '#c2c0b8';
     ctx.font = '16px "Noto Serif TC", serif';
@@ -73,7 +74,7 @@ function generateDivinationImage() {
     // 占斷啟示
     ctx.fillStyle = '#c83e3d';
     ctx.font = 'bold 18px "Noto Serif TC", serif';
-    ctx.fillText('💡 占斷啟示：', 60, 480);
+    ctx.fillText(t('export.interpLabel'), 60, 480);
 
     ctx.fillStyle = '#e6e4df';
     ctx.font = '16px "Noto Serif TC", serif';
@@ -84,11 +85,11 @@ function generateDivinationImage() {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#8c8980';
     ctx.font = '14px "Noto Serif TC", serif';
-    ctx.fillText('易經數理占卜 ‧ 典藏靈符', 300, 690);
+    ctx.fillText(t('export.footer'), 300, 690);
 
     // 下載圖片
     const link = document.createElement('a');
-    link.download = `易經占卜_${guaName}.png`;
+    link.download = `${t('export.filenamePrefix')}_${guaName}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
 }
@@ -173,6 +174,233 @@ modeCustomBtn?.addEventListener('click', () => {
     customPanel.classList.remove('hidden');
 });
 
+// ===== 國際化 i18n (Issue #16) =====
+const LANG_STORAGE_KEY = 'yijing_lang';
+
+// 目前顯示中的數字，供切換語系時以相同數字重新解讀
+let lastResultNumbers = null;
+
+const I18N = {
+    zh: {
+        'doc.title': '易經數理占卜 | 探索天人合一之智慧',
+        'header.badge': '周易靈數 ‧ 誠心求卦',
+        'header.title': '易經數理占卜',
+        'header.subtitle': '數由心生 ‧ 卦由數成 ‧ 探索天人合一之智慧',
+        'welcome.title': '起卦儀式',
+        'welcome.intro': '易有太極，是生兩儀。請平心靜氣，默想心中所求之事。<br>點擊下方起卦按鈕，系統將感應數列，為您求得天地相對應之六十四卦大象。',
+        'mode.random': '🎲 隨機天成',
+        'mode.custom': '✍️ 心感自訂數',
+        'form.upperLabel': '上數 (1-9999)',
+        'form.lowerLabel': '下數 (1-9999)',
+        'form.upperPlaceholder': '例如: 8',
+        'form.lowerPlaceholder': '例如: 21',
+        'action.start': '誠心起卦',
+        'action.startHotkey': '快捷鍵：按下 [ Space 空白鍵 ] 開始',
+        'action.restart': '重新起卦 (R)',
+        'action.restartHotkey': '亦可直接按下 [ R ] 鍵重新起卦',
+        'result.tag': '卦象占斷',
+        'result.title': '天人相應 ‧ 卦象顯現',
+        'result.copy': '📋 複製卦辭',
+        'result.export': '🖼️ 導出圖卡',
+        'result.again': '↺ 再求一卦',
+        'numbers.upper': '上數 (天爻)',
+        'numbers.lower': '下數 (地爻)',
+        'numbers.modulo': '求模演卦',
+        'gua.primaryTag': '本卦 (主象)',
+        'gua.derivedTag': '之卦 (變象)',
+        'gua.judgmentHeader': '朱熹變占判法',
+        'gua.imageHeader': '卦象大象傳',
+        'gua.interpretationHeader': '占斷啟示',
+        'gua.primaryLabel': '主解：',
+        'gua.secondaryLabel': '輔解：',
+        'loading.text': '籌策演算中 ‧ 靜心聽卦...',
+        'loading.subtext': '太極動而生陽，動極而靜，靜而生陰',
+        'error.title': '起卦中斷',
+        'error.defaultMessage': '網絡或感應發生異常，請重試。',
+        'error.retry': '重新感應',
+        'error.invalidCustom': '請在自訂數字輸入 1 至 9999 之間的有效數字',
+        'error.network': '網路連接失敗，請檢查網路狀態後重試',
+        'error.unknown': '起卦過程中發生未知錯誤',
+        'info.title': '☯ 關於數理易經占卜',
+        'info.body': '《易經·繫辭上》曰：「大衍之數五十，其用四十有九... 參伍以變，錯綜其數。」易經數理占卜乃藉由隨機生成的數理總和對應易經六十四卦，反映當下心境與吉凶消長之機。',
+        'info.disclaimer': '<strong>註：</strong>本系統基於中華傳統經典易經文化設計，旨在啟迪思維與修養身心，請理性參考。',
+        'history.title': '歷次起卦紀錄',
+        'history.clear': '清空紀錄',
+        'history.empty': '尚無起卦歷史紀錄',
+        'footer.copyright': '© 2026 易經數理占卜 ‧ 傳承經典文化',
+        'copy.header': '【易經數理占卜 ‧ 靈符卦象】',
+        'copy.primary': '本卦：',
+        'copy.derived': '之卦：',
+        'export.title': '周易靈數 ‧ 天人合一',
+        'export.footer': '易經數理占卜 ‧ 典藏靈符',
+        'export.imageLabel': '📜 卦象大象傳：',
+        'export.interpLabel': '💡 占斷啟示：',
+        'export.filenamePrefix': '易經占卜',
+        'sound.onTitle': '音效已開啟（點擊靜音）',
+        'sound.offTitle': '音效已靜音（點擊開啟）'
+    },
+    en: {
+        'doc.title': 'I Ching Numerology | The Wisdom of Heaven and Humanity as One',
+        'header.badge': 'Zhouyi Numerology · A Sincere Inquiry',
+        'header.title': 'I Ching Numerology Divination',
+        'header.subtitle': 'Numbers arise from the heart · Hexagrams form from numbers · Explore the wisdom of Heaven and Humanity as one',
+        'welcome.title': 'The Ritual of Casting',
+        'welcome.intro': 'There is Taiji, which gives rise to the two modes. Calm your mind and hold your question quietly.<br>Click the button below to cast; the system will sense the numbers and reveal the hexagram of Heaven and Earth.',
+        'mode.random': '🎲 Random Cast',
+        'mode.custom': '✍️ Custom Numbers',
+        'form.upperLabel': 'Upper number (1-9999)',
+        'form.lowerLabel': 'Lower number (1-9999)',
+        'form.upperPlaceholder': 'e.g. 8',
+        'form.lowerPlaceholder': 'e.g. 21',
+        'action.start': 'Cast the Hexagram',
+        'action.startHotkey': 'Hotkey: press [ Space ] to begin',
+        'action.restart': 'Cast Again (R)',
+        'action.restartHotkey': 'You may also press [ R ] to cast again',
+        'result.tag': 'Hexagram Reading',
+        'result.title': 'Heaven and Humanity Respond · The Hexagram Appears',
+        'result.copy': '📋 Copy Text',
+        'result.export': '🖼️ Export Image',
+        'result.again': '↺ Ask Again',
+        'numbers.upper': 'Upper (Heaven)',
+        'numbers.lower': 'Lower (Earth)',
+        'numbers.modulo': 'Modulo',
+        'gua.primaryTag': 'Primary Hexagram',
+        'gua.derivedTag': 'Derived Hexagram',
+        'gua.judgmentHeader': "Zhu Xi's Changing-Line Rule",
+        'gua.imageHeader': 'The Image (Da Xiang)',
+        'gua.interpretationHeader': 'Interpretation',
+        'gua.primaryLabel': 'Primary: ',
+        'gua.secondaryLabel': 'Supporting: ',
+        'loading.text': 'Casting the stalks · Listen quietly...',
+        'loading.subtext': 'The Taiji moves and yang is born; at the extreme of motion comes stillness, and yin is born',
+        'error.title': 'Casting Interrupted',
+        'error.defaultMessage': 'A network or sensing error occurred. Please try again.',
+        'error.retry': 'Try Again',
+        'error.invalidCustom': 'Please enter valid numbers between 1 and 9999',
+        'error.network': 'Network request failed. Please check your connection and try again.',
+        'error.unknown': 'An unknown error occurred while casting',
+        'info.title': '☯ About I Ching Numerology',
+        'info.body': 'The Great Treatise says: "The number of the Great Expansion is fifty, of which forty-nine are used... Three and five are used for change, and the numbers are interlaced." I Ching numerology maps the sum of randomly generated numbers to the sixty-four hexagrams, reflecting the mood of the moment and the rise and fall of fortune.',
+        'info.disclaimer': '<strong>Note:</strong> This system is designed around traditional Chinese I Ching culture. It aims to inspire reflection and to cultivate body and mind; please consult it with reason.',
+        'history.title': 'Divination History',
+        'history.clear': 'Clear',
+        'history.empty': 'No divination history yet',
+        'footer.copyright': '© 2026 I Ching Numerology · Preserving Classic Culture',
+        'copy.header': '【I Ching Numerology · Hexagram】',
+        'copy.primary': 'Primary hexagram: ',
+        'copy.derived': 'Derived hexagram: ',
+        'export.title': 'Zhouyi Numerology · Heaven and Humanity as One',
+        'export.footer': 'I Ching Numerology · Treasured Talisman',
+        'export.imageLabel': '📜 The Image:',
+        'export.interpLabel': '💡 Interpretation:',
+        'export.filenamePrefix': 'IChing',
+        'sound.onTitle': 'Sound on (click to mute)',
+        'sound.offTitle': 'Sound muted (click to enable)'
+    }
+};
+
+let currentLang = 'zh';
+try {
+    const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+    if (storedLang === 'en' || storedLang === 'zh') currentLang = storedLang;
+} catch (e) {
+    console.log('讀取語系設定失敗:', e);
+}
+
+// 依當前語系取得翻譯文字
+function t(key) {
+    const table = I18N[currentLang] || I18N.zh;
+    return table[key] || I18N.zh[key] || key;
+}
+
+// 套用靜態元素之 i18n 標記
+function applyStaticTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const value = t(el.getAttribute('data-i18n'));
+        if (value) el.textContent = value;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const value = t(el.getAttribute('data-i18n-html'));
+        if (value) el.innerHTML = value;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const value = t(el.getAttribute('data-i18n-placeholder'));
+        if (value) el.setAttribute('placeholder', value);
+    });
+}
+
+// 卦序標籤：第 N 卦 / Hexagram N
+function formatHexagramNumber(guaIndex) {
+    const n = (guaIndex ?? 0) + 1;
+    return currentLang === 'en' ? `Hexagram ${n}` : `第 ${n} 卦`;
+}
+
+// 卦名標籤：乾卦 / Qian · The Creative
+function formatGuaName(guaName) {
+    if (!guaName) return '--';
+    return currentLang === 'en' ? guaName : `${guaName}卦`;
+}
+
+// 動爻標籤 (支援多爻變)
+function formatMovingLabel(movingNames, movingCount) {
+    const names = movingNames.length ? movingNames : [''];
+    if (currentLang === 'en') {
+        const joined = names.join(', ');
+        return movingCount > 1
+            ? `Moving lines: ${joined} (${movingCount} moving lines)`
+            : `Moving lines: ${joined}`;
+    }
+    const joined = names.join('、');
+    return movingCount > 1
+        ? `動爻：${joined}（${movingCount} 爻變）`
+        : `動爻：${joined}`;
+}
+
+const langToggleBtn = document.getElementById('lang-toggle');
+
+function applyLanguage(lang, options = {}) {
+    currentLang = (lang === 'en') ? 'en' : 'zh';
+    try {
+        localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+    } catch (e) {
+        console.log('儲存語系設定失敗:', e);
+    }
+    document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-TW';
+    document.title = t('doc.title');
+    if (langToggleBtn) {
+        langToggleBtn.textContent = currentLang === 'en' ? '中' : 'EN';
+        langToggleBtn.title = currentLang === 'en' ? '切換語系 / Switch language' : 'Switch language / 切換語系';
+    }
+    applyStaticTranslations();
+    applySoundState();
+    renderHistory();
+    if (options.refreshResult) refreshResultLanguage();
+}
+
+langToggleBtn?.addEventListener('click', () => {
+    applyLanguage(currentLang === 'en' ? 'zh' : 'en', { refreshResult: true });
+});
+
+// 切換語系後，以相同數字重新取得該語系之卦象內容 (不重複寫入歷史紀錄)
+async function refreshResultLanguage() {
+    if (!lastResultNumbers) return;
+    try {
+        const response = await fetch('/interpret', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                number1: lastResultNumbers.number1,
+                number2: lastResultNumbers.number2,
+                lang: currentLang
+            })
+        });
+        const data = await response.json();
+        if (data.success) displayResult({ ...data, skipHistory: true });
+    } catch (error) {
+        console.error('語系切換重新解讀失敗:', error);
+    }
+}
+
 // 音效開關與 LocalStorage 持久化 (Issue #15)
 const SOUND_STORAGE_KEY = 'yijing_sound_enabled';
 const soundToggleBtn = document.getElementById('sound-toggle');
@@ -189,7 +417,7 @@ function applySoundState() {
     soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔇';
     soundToggleBtn.setAttribute('aria-pressed', String(soundEnabled));
     soundToggleBtn.classList.toggle('muted', !soundEnabled);
-    soundToggleBtn.title = soundEnabled ? '音效已開啟（點擊靜音）' : '音效已靜音（點擊開啟）';
+    soundToggleBtn.title = soundEnabled ? t('sound.onTitle') : t('sound.offTitle');
 }
 
 soundToggleBtn?.addEventListener('click', () => {
@@ -241,14 +469,15 @@ copyTextBtn?.addEventListener('click', () => {
     const judgmentRule = document.getElementById('judgment-rule')?.textContent || '';
     const judgmentText = document.getElementById('judgment-text')?.textContent || '';
     const judgmentPrimary = document.getElementById('judgment-primary')?.textContent || '';
+    const colon = currentLang === 'en' ? ': ' : '：';
 
-    const textToCopy = `【易經數理占卜 ‧ 靈符卦象】\n本卦：${guaName}\n${movingText} ➔ 之卦：${derivedName}\n\n🀄 朱熹變占判法：${judgmentRule} ‧ ${judgmentText}\n主解：${judgmentPrimary}\n\n📜 卦象大象傳：\n${desc}\n\n💡 占斷啟示：\n${interp}`;
+    const textToCopy = `${t('copy.header')}\n${t('copy.primary')}${guaName}\n${movingText} ${currentLang === 'en' ? '➔ ' : '➔ 之 '}${derivedName}\n\n🀄 ${t('gua.judgmentHeader')}${colon}${judgmentRule} · ${judgmentText}\n${t('gua.primaryLabel')}${judgmentPrimary}\n\n${t('export.imageLabel')}\n${desc}\n\n${t('export.interpLabel')}\n${interp}`;
     
     navigator.clipboard.writeText(textToCopy).then(() => {
         const span = copyTextBtn.querySelector('span');
         if (span) {
             const original = span.textContent;
-            span.textContent = '✅ 已複製卦辭';
+            span.textContent = currentLang === 'en' ? '✅ Copied' : '✅ 已複製卦辭';
             setTimeout(() => { span.textContent = original; }, 2000);
         }
     }).catch(err => {
@@ -273,11 +502,13 @@ async function performDivination() {
             const num1 = parseInt(customNum1Input?.value || '0', 10);
             const num2 = parseInt(customNum2Input?.value || '0', 10);
             if (isNaN(num1) || num1 < 1 || num1 > 9999 || isNaN(num2) || num2 < 1 || num2 > 9999) {
-                showError('請在自訂數字輸入 1 至 9999 之間的有效數字');
+                showError(t('error.invalidCustom'));
                 return;
             }
             endpoint = '/interpret';
-            options.body = JSON.stringify({ number1: num1, number2: num2 });
+            options.body = JSON.stringify({ number1: num1, number2: num2, lang: currentLang });
+        } else {
+            endpoint = `/divination?lang=${currentLang}`;
         }
 
         // 顯示載入狀態
@@ -292,11 +523,11 @@ async function performDivination() {
         if (data.success) {
             displayResult(data);
         } else {
-            showError(data.error || '起卦過程中發生未知錯誤');
+            showError(data.error || t('error.unknown'));
         }
     } catch (error) {
         console.error('起卦請求失敗:', error);
-        showError('網路連接失敗，請檢查網路狀態後重試');
+        showError(t('error.network'));
     }
 }
 
@@ -314,12 +545,17 @@ function displayResult(data) {
     if (number1Element) number1Element.textContent = data.number1;
     if (number2Element) number2Element.textContent = data.number2;
     if (guaModElement) guaModElement.textContent = data.gua_index;
-    
+
+    // 記錄本次數字，供切換語系時重新解讀 (Issue #16)
+    if (data.number1 && data.number2) {
+        lastResultNumbers = { number1: data.number1, number2: data.number2 };
+    }
+
     // 本卦
-    if (guaNumberTagElement) guaNumberTagElement.textContent = `第 ${data.gua_index + 1} 卦`;
+    if (guaNumberTagElement) guaNumberTagElement.textContent = formatHexagramNumber(data.gua_index);
     if (guaSymbolElement) guaSymbolElement.textContent = data.gua_symbol || '☯';
-    if (guaNameElement) guaNameElement.textContent = `${data.gua_name}卦`;
-    
+    if (guaNameElement) guaNameElement.textContent = formatGuaName(data.gua_name);
+
     // 動爻與之卦 (變卦)：支援多爻變 (Issue #14)
     const movingYaoBadge = document.getElementById('moving-yao-badge');
     const derivedGuaSymbol = document.getElementById('derived-gua-symbol');
@@ -331,14 +567,10 @@ function displayResult(data) {
         : (data.moving_yao_name ? [data.moving_yao_name] : []);
     const movingCount = data.moving_yao_count || movingNames.length;
 
-    if (movingYaoBadge) {
-        movingYaoBadge.textContent = movingCount > 1
-            ? `動爻：${movingNames.join('、')}（${movingCount} 爻變）`
-            : `動爻：${movingNames[0] || '動爻'}`;
-    }
+    if (movingYaoBadge) movingYaoBadge.textContent = formatMovingLabel(movingNames, movingCount);
     if (derivedGuaSymbol) derivedGuaSymbol.textContent = data.derived_gua_symbol || '☯';
-    if (derivedGuaTag) derivedGuaTag.textContent = `第 ${(data.derived_gua_index ?? 0) + 1} 卦`;
-    if (derivedGuaName) derivedGuaName.textContent = `${data.derived_gua_name || '--'}卦`;
+    if (derivedGuaTag) derivedGuaTag.textContent = formatHexagramNumber(data.derived_gua_index ?? 0);
+    if (derivedGuaName) derivedGuaName.textContent = formatGuaName(data.derived_gua_name);
 
     // 朱熹變占判法 (Issue #14)
     const judgmentRuleElement = document.getElementById('judgment-rule');
@@ -364,8 +596,8 @@ function displayResult(data) {
     // 執行細緻的文字與數值浮出動畫
     animateResultElements();
 
-    // 寫入歷史紀錄 (僅當包含全量 data 時)
-    if (data.gua_name && !data.is_history_view) {
+    // 寫入歷史紀錄 (僅當包含全量 data 時；語系切換重新解讀不重複寫入)
+    if (data.gua_name && !data.is_history_view && !data.skipHistory) {
         saveToHistory({
             ...data,
             timestamp: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -403,15 +635,16 @@ function renderHistory() {
     if (!historyListElement) return;
     const history = getHistory();
     if (history.length === 0) {
-        historyListElement.innerHTML = '<p class="empty-history-text">尚無起卦歷史紀錄。</p>';
+        historyListElement.innerHTML = `<p class="empty-history-text">${t('history.empty')}</p>`;
         return;
     }
 
+    const separator = currentLang === 'en' ? ', ' : '、';
     historyListElement.innerHTML = history.map((item, idx) => `
         <div class="history-item" data-idx="${idx}">
             <div class="history-main-info">
                 <span class="history-symbol">${item.gua_symbol || '☯'}</span>
-                <span class="history-names">${item.gua_name}卦 (${(item.moving_yao_names || [item.moving_yao_name || '']).join('、')} ➔ ${item.derived_gua_name || ''}卦)</span>
+                <span class="history-names">${formatGuaName(item.gua_name)} (${(item.moving_yao_names || [item.moving_yao_name || '']).join(separator)} ➔ ${formatGuaName(item.derived_gua_name)})</span>
             </div>
             <span class="history-time">${item.timestamp}</span>
         </div>
@@ -483,11 +716,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 80);
     }
 
-    // 頁面載入時初始化歷史紀錄
-    renderHistory();
-
-    // 頁面載入時套用音效開關狀態 (Issue #15)
-    applySoundState();
+    // 頁面載入時套用語系 (i18n) 與歷史紀錄、音效開關狀態
+    applyLanguage(currentLang);
 
     // Service Worker PWA 離線註冊
 

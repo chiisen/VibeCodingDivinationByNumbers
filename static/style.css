@@ -122,6 +122,14 @@ body {
     border-color: var(--border-dark);
 }
 
+/* 語系切換按鈕 (Issue #16) */
+.lang-btn {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
 /* 頁首東方風格 */
 .zen-header {
     text-align: center;
