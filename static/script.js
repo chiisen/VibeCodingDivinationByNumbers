@@ -208,8 +208,11 @@ copyTextBtn?.addEventListener('click', () => {
     const derivedName = document.getElementById('derived-gua-name')?.textContent || '';
     const desc = guaDescriptionElement?.textContent || '';
     const interp = guaInterpretationElement?.textContent || '';
-    
-    const textToCopy = `【易經數理占卜 ‧ 靈符卦象】\n本卦：${guaName}\n${movingText} ➔ 之卦：${derivedName}\n\n📜 卦象大象傳：\n${desc}\n\n💡 占斷啟示：\n${interp}`;
+    const judgmentRule = document.getElementById('judgment-rule')?.textContent || '';
+    const judgmentText = document.getElementById('judgment-text')?.textContent || '';
+    const judgmentPrimary = document.getElementById('judgment-primary')?.textContent || '';
+
+    const textToCopy = `【易經數理占卜 ‧ 靈符卦象】\n本卦：${guaName}\n${movingText} ➔ 之卦：${derivedName}\n\n🀄 朱熹變占判法：${judgmentRule} ‧ ${judgmentText}\n主解：${judgmentPrimary}\n\n📜 卦象大象傳：\n${desc}\n\n💡 占斷啟示：\n${interp}`;
     
     navigator.clipboard.writeText(textToCopy).then(() => {
         const span = copyTextBtn.querySelector('span');
@@ -287,16 +290,38 @@ function displayResult(data) {
     if (guaSymbolElement) guaSymbolElement.textContent = data.gua_symbol || '☯';
     if (guaNameElement) guaNameElement.textContent = `${data.gua_name}卦`;
     
-    // 動爻與之卦 (變卦)
+    // 動爻與之卦 (變卦)：支援多爻變 (Issue #14)
     const movingYaoBadge = document.getElementById('moving-yao-badge');
     const derivedGuaSymbol = document.getElementById('derived-gua-symbol');
     const derivedGuaTag = document.getElementById('derived-gua-number-tag');
     const derivedGuaName = document.getElementById('derived-gua-name');
-    
-    if (movingYaoBadge) movingYaoBadge.textContent = `動爻：${data.moving_yao_name || '動爻'}`;
+
+    const movingNames = Array.isArray(data.moving_yao_names) && data.moving_yao_names.length
+        ? data.moving_yao_names
+        : (data.moving_yao_name ? [data.moving_yao_name] : []);
+    const movingCount = data.moving_yao_count || movingNames.length;
+
+    if (movingYaoBadge) {
+        movingYaoBadge.textContent = movingCount > 1
+            ? `動爻：${movingNames.join('、')}（${movingCount} 爻變）`
+            : `動爻：${movingNames[0] || '動爻'}`;
+    }
     if (derivedGuaSymbol) derivedGuaSymbol.textContent = data.derived_gua_symbol || '☯';
     if (derivedGuaTag) derivedGuaTag.textContent = `第 ${(data.derived_gua_index ?? 0) + 1} 卦`;
     if (derivedGuaName) derivedGuaName.textContent = `${data.derived_gua_name || '--'}卦`;
+
+    // 朱熹變占判法 (Issue #14)
+    const judgmentRuleElement = document.getElementById('judgment-rule');
+    const judgmentTextElement = document.getElementById('judgment-text');
+    const judgmentPrimaryElement = document.getElementById('judgment-primary');
+    const judgmentSecondaryElement = document.getElementById('judgment-secondary');
+    const judgmentSecondaryRow = document.getElementById('judgment-secondary-row');
+
+    if (judgmentRuleElement) judgmentRuleElement.textContent = data.judgment_rule || '--';
+    if (judgmentTextElement) judgmentTextElement.textContent = data.judgment_text || '';
+    if (judgmentPrimaryElement) judgmentPrimaryElement.textContent = data.judgment_primary || '--';
+    if (judgmentSecondaryElement) judgmentSecondaryElement.textContent = data.judgment_secondary || '';
+    if (judgmentSecondaryRow) judgmentSecondaryRow.classList.toggle('hidden', !data.judgment_secondary);
     
     if (guaDescriptionElement) guaDescriptionElement.textContent = data.gua_description;
     if (guaInterpretationElement) guaInterpretationElement.textContent = data.gua_interpretation;
@@ -356,7 +381,7 @@ function renderHistory() {
         <div class="history-item" data-idx="${idx}">
             <div class="history-main-info">
                 <span class="history-symbol">${item.gua_symbol || '☯'}</span>
-                <span class="history-names">${item.gua_name}卦 (${item.moving_yao_name || ''} ➔ ${item.derived_gua_name || ''}卦)</span>
+                <span class="history-names">${item.gua_name}卦 (${(item.moving_yao_names || [item.moving_yao_name || '']).join('、')} ➔ ${item.derived_gua_name || ''}卦)</span>
             </div>
             <span class="history-time">${item.timestamp}</span>
         </div>

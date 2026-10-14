@@ -146,52 +146,131 @@ def generate_numbers():
 
 YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻']
 
-def calculate_derived_gua(gua_index: int, number1: int) -> Tuple[int, str, int, str, str]:
-    """計算動爻位置 (1-6) 與演變後的之卦 (變卦)"""
-    moving_yao_idx = (number1 - 1) % 6
-    moving_yao_name = YAO_NAMES[moving_yao_idx]
-    derived_index = gua_index ^ (1 << moving_yao_idx)
+# 朱熹《易學啟蒙》變占法則：依動爻數量判定主要判辭來源
+JUDGMENT_RULES: Dict[int, Tuple[str, str]] = {
+    0: ("六爻皆靜", "以本卦卦辭為占"),
+    1: ("一爻變", "以本卦該動爻之爻辭為占"),
+    2: ("二爻變", "以本卦兩動爻之爻辭為占，以上爻為主"),
+    3: ("三爻變", "以本卦與之卦卦辭合占，以本卦為貞（主）、之卦為悔（輔）"),
+    4: ("四爻變", "以之卦中兩不變爻之爻辭為占，以下爻為主"),
+    5: ("五爻變", "以之卦中唯一不變爻之爻辭為占"),
+    6: ("六爻變", "乾卦以用九、坤卦以用六為占，其餘以之卦卦辭為占"),
+}
+
+
+def calculate_moving_yaos(number1: int, number2: int) -> list:
+    """推演動爻位置集合 (1-6)：上數定首動爻，下數定動爻數量 (1-6 爻)"""
+    count = (number2 - 1) % 6 + 1
+    start_idx = (number1 - 1) % 6
+    return sorted({(start_idx + i) % 6 + 1 for i in range(count)})
+
+
+def calculate_derived_index(gua_index: int, moving_yaos) -> int:
+    """以所有動爻之 XOR 位元遮罩演算之卦 (變卦) 索引"""
+    mask = 0
+    for position in moving_yaos:
+        mask |= 1 << (int(position) - 1)
+    return gua_index ^ mask
+
+
+def judge_moving_yaos(moving_yaos, gua_index: int, derived_index: int) -> Dict[str, Any]:
+    """依朱熹《易學啟蒙》變占法則，判定本次占卜之主要判辭依據"""
+    positions = sorted({int(p) for p in moving_yaos})
+    count = len(positions)
+    if count not in JUDGMENT_RULES:
+        raise ValueError(f"動爻數量必須介於 0 至 6 之間，收到 {count}")
+
+    rule_name, rule_text = JUDGMENT_RULES[count]
+    gua_name = YIJING_GUA[gua_index]['name']
+    derived_name = YIJING_GUA[derived_index]['name']
+    primary_source: Optional[str] = None
+    secondary_source: Optional[str] = None
+
+    if count == 0:
+        primary_source = f"本卦《{gua_name}》卦辭"
+    elif count == 1:
+        primary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[0] - 1]}爻辭"
+    elif count == 2:
+        primary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[-1] - 1]}爻辭（主）"
+        secondary_source = f"本卦《{gua_name}》{YAO_NAMES[positions[-2] - 1]}爻辭（輔）"
+    elif count == 3:
+        primary_source = f"本卦《{gua_name}》卦辭（貞／主）"
+        secondary_source = f"之卦《{derived_name}》卦辭（悔／輔）"
+    elif count == 4:
+        unchanged = [p for p in range(1, 7) if p not in positions]
+        primary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[0] - 1]}爻辭（主）"
+        secondary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[1] - 1]}爻辭（輔）"
+    elif count == 5:
+        unchanged = [p for p in range(1, 7) if p not in positions]
+        primary_source = f"之卦《{derived_name}》{YAO_NAMES[unchanged[0] - 1]}爻辭"
+    else:
+        if gua_index == 0:
+            primary_source = "乾卦 用九：「見群龍無首，吉」"
+        elif gua_index == 1:
+            primary_source = "坤卦 用六：「利永貞」"
+        else:
+            primary_source = f"之卦《{derived_name}》卦辭"
+
+    return {
+        'moving_count': count,
+        'judgment_rule': rule_name,
+        'judgment_text': rule_text,
+        'judgment_primary': primary_source,
+        'judgment_secondary': secondary_source,
+    }
+
+
+def build_divination_payload(number1: int, number2: int) -> Dict[str, Any]:
+    """依兩數建構完整卦象回應資料 (本卦 ➔ 多爻變 ➔ 之卦 ➔ 變占判法)"""
+    gua_index = (number1 + number2) % 64
+    gua_info = YIJING_GUA[gua_index]
+
+    moving_yaos = calculate_moving_yaos(number1, number2)
+    derived_index = calculate_derived_index(gua_index, moving_yaos)
     derived_info = YIJING_GUA[derived_index]
-    derived_symbol = chr(0x4DC0 + derived_index)
-    return moving_yao_idx + 1, moving_yao_name, derived_index, derived_info['name'], derived_symbol
+    judgment = judge_moving_yaos(moving_yaos, gua_index, derived_index)
+
+    return {
+        'success': True,
+        'number1': number1,
+        'number2': number2,
+        'gua_index': gua_index,
+        'gua_name': gua_info['name'],
+        'gua_symbol': chr(0x4DC0 + gua_index),
+        'gua_description': gua_info['description'],
+        'gua_interpretation': gua_info['interpretation'],
+        'moving_yao_num': moving_yaos[0],
+        'moving_yao_name': YAO_NAMES[moving_yaos[0] - 1],
+        'moving_yaos': moving_yaos,
+        'moving_yao_names': [YAO_NAMES[p - 1] for p in moving_yaos],
+        'moving_yao_count': len(moving_yaos),
+        'judgment_rule': judgment['judgment_rule'],
+        'judgment_text': judgment['judgment_text'],
+        'judgment_primary': judgment['judgment_primary'],
+        'judgment_secondary': judgment['judgment_secondary'],
+        'derived_gua_index': derived_index,
+        'derived_gua_name': derived_info['name'],
+        'derived_gua_symbol': chr(0x4DC0 + derived_index),
+    }
+
 
 @app.route('/interpret', methods=['POST'])
 def interpret_numbers():
-    """根據兩個數字進行易經解讀 (含本卦與之卦動爻演算)"""
+    """根據兩個數字進行易經解讀 (含本卦、多爻變與之卦演算)"""
     try:
         data = request.get_json() or {}
         raw1 = data.get('number1')
         raw2 = data.get('number2')
-        
+
         num1, err1 = validate_number_param(raw1, 'number1')
         if err1:
             return jsonify({'success': False, 'error': err1}), 400
-            
+
         num2, err2 = validate_number_param(raw2, 'number2')
         if err2:
             return jsonify({'success': False, 'error': err2}), 400
-        
-        gua_index = (num1 + num2) % 64
-        gua_info = YIJING_GUA[gua_index]
-        gua_symbol = chr(0x4DC0 + gua_index)
-        
-        line_num, line_name, derived_idx, derived_name, derived_symbol = calculate_derived_gua(gua_index, num1)
-        
-        return jsonify({
-            'success': True,
-            'number1': num1,
-            'number2': num2,
-            'gua_index': gua_index,
-            'gua_name': gua_info['name'],
-            'gua_symbol': gua_symbol,
-            'gua_description': gua_info['description'],
-            'gua_interpretation': gua_info['interpretation'],
-            'moving_yao_num': line_num,
-            'moving_yao_name': line_name,
-            'derived_gua_index': derived_idx,
-            'derived_gua_name': derived_name,
-            'derived_gua_symbol': derived_symbol
-        })
+
+        return jsonify(build_divination_payload(num1, num2))
     except Exception as e:
         return jsonify({
             'success': False,
@@ -200,32 +279,12 @@ def interpret_numbers():
 
 @app.route('/divination', methods=['POST'])
 def divination():
-    """一次性完成占卜：生成數字並解讀 (含本卦與之卦)"""
+    """一次性完成占卜：生成數字並解讀 (含本卦、多爻變與之卦)"""
     try:
         number1 = random.randint(1, 100)
         number2 = random.randint(1, 100)
-        
-        gua_index = (number1 + number2) % 64
-        gua_info = YIJING_GUA[gua_index]
-        gua_symbol = chr(0x4DC0 + gua_index)
-        
-        line_num, line_name, derived_idx, derived_name, derived_symbol = calculate_derived_gua(gua_index, number1)
-        
-        return jsonify({
-            'success': True,
-            'number1': number1,
-            'number2': number2,
-            'gua_index': gua_index,
-            'gua_name': gua_info['name'],
-            'gua_symbol': gua_symbol,
-            'gua_description': gua_info['description'],
-            'gua_interpretation': gua_info['interpretation'],
-            'moving_yao_num': line_num,
-            'moving_yao_name': line_name,
-            'derived_gua_index': derived_idx,
-            'derived_gua_name': derived_name,
-            'derived_gua_symbol': derived_symbol
-        })
+
+        return jsonify(build_divination_payload(number1, number2))
     except Exception as e:
         return jsonify({
             'success': False,
