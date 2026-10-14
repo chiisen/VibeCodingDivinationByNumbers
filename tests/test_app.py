@@ -1,5 +1,12 @@
 import pytest
-from app import app, YIJING_GUA, APP_VERSION
+from app import (
+    app,
+    YIJING_GUA,
+    APP_VERSION,
+    calculate_moving_yaos,
+    calculate_derived_index,
+    judge_moving_yaos,
+)
 
 @pytest.fixture
 def client():
@@ -125,6 +132,89 @@ def test_script_binds_restart_button_and_hotkey(client):
     js = response.data.decode('utf-8')
     assert "getElementById('restart-divination')" in js
     assert 'KeyR' in js
+
+def test_calculate_moving_yaos_single_yao():
+    """測試一爻變時，動爻位置仍由「上數」決定 (保持既有語意)"""
+    assert calculate_moving_yaos(1, 1) == [1]
+    assert calculate_moving_yaos(7, 1) == [1]
+    assert calculate_moving_yaos(6, 1) == [6]
+
+def test_calculate_moving_yaos_multiple_yaos():
+    """測試「下數」決定動爻數量 (1-6 爻)，且位置不重複、均落於 1-6"""
+    for number2 in range(1, 101):
+        yaos = calculate_moving_yaos(21, number2)
+        assert len(yaos) == (number2 - 1) % 6 + 1
+        assert len(set(yaos)) == len(yaos)
+        assert all(1 <= p <= 6 for p in yaos)
+
+def test_calculate_derived_index_multi_yao():
+    """測試以所有動爻之 XOR 位元遮罩演算之卦 (變卦)"""
+    assert calculate_derived_index(4, [1]) == 5
+    assert calculate_derived_index(0, [1, 2]) == 3
+    assert calculate_derived_index(63, [1, 2, 3, 4, 5, 6]) == 0
+
+def test_judge_moving_yaos_zhu_xi_rules():
+    """測試朱熹《易學啟蒙》變占法則之判辭來源判定"""
+    # 六爻皆靜
+    assert judge_moving_yaos([], 4, 4)['judgment_rule'] == '六爻皆靜'
+    # 一爻變：以本卦該動爻爻辭為占
+    one = judge_moving_yaos([1], 4, 5)
+    assert one['judgment_rule'] == '一爻變'
+    assert one['judgment_primary'] == '本卦《需》初爻爻辭'
+    assert one['judgment_secondary'] is None
+    # 二爻變：以本卦兩動爻爻辭為占，以上爻為主
+    two = judge_moving_yaos([1, 5], 4, 5)
+    assert two['judgment_rule'] == '二爻變'
+    assert two['judgment_primary'] == '本卦《需》五爻爻辭（主）'
+    assert two['judgment_secondary'] == '本卦《需》初爻爻辭（輔）'
+    # 三爻變：本卦為貞（主）、之卦為悔（輔）
+    three = judge_moving_yaos([1, 2, 3], 4, 7)
+    assert three['judgment_rule'] == '三爻變'
+    assert three['judgment_primary'] == '本卦《需》卦辭（貞／主）'
+    assert three['judgment_secondary'] == '之卦《比》卦辭（悔／輔）'
+    # 四爻變：以之卦兩不變爻之爻辭為占，以下爻為主
+    four = judge_moving_yaos([1, 2, 3, 4], 4, 7)
+    assert four['judgment_rule'] == '四爻變'
+    assert four['judgment_primary'] == '之卦《比》五爻爻辭（主）'
+    assert four['judgment_secondary'] == '之卦《比》上爻爻辭（輔）'
+    # 五爻變：以之卦唯一不變爻之爻辭為占
+    five = judge_moving_yaos([1, 2, 3, 4, 5], 4, 7)
+    assert five['judgment_rule'] == '五爻變'
+    assert five['judgment_primary'] == '之卦《比》上爻爻辭'
+    assert five['judgment_secondary'] is None
+    # 六爻變：乾用九、坤用六，其餘以之卦卦辭為占
+    assert '用九' in judge_moving_yaos([1, 2, 3, 4, 5, 6], 0, 63)['judgment_primary']
+    assert '用六' in judge_moving_yaos([1, 2, 3, 4, 5, 6], 1, 62)['judgment_primary']
+    assert judge_moving_yaos([1, 2, 3, 4, 5, 6], 4, 59)['judgment_primary'] == '之卦《節》卦辭'
+
+def test_divination_api_multi_yao_payload(client):
+    """測試起卦 API 回傳多爻變與朱熹變占判法欄位 (Issue #14)"""
+    response = client.post('/divination')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['success'] is True
+
+    assert isinstance(data['moving_yaos'], list)
+    assert data['moving_yao_count'] == len(data['moving_yaos'])
+    assert data['moving_yao_count'] == (data['number2'] - 1) % 6 + 1
+    assert len(data['moving_yao_names']) == data['moving_yao_count']
+    assert data['judgment_rule'] in (
+        '一爻變', '二爻變', '三爻變', '四爻變', '五爻變', '六爻變'
+    )
+    assert data['judgment_text']
+    assert data['judgment_primary']
+
+    # 之卦須等於所有動爻 XOR 位元遮罩之演算結果
+    expected_derived = calculate_derived_index(data['gua_index'], data['moving_yaos'])
+    assert data['derived_gua_index'] == expected_derived
+    assert data['derived_gua_name'] == YIJING_GUA[expected_derived]['name']
+
+def test_index_has_judgment_panel(client):
+    """測試結果面板具備「朱熹變占判法」呈現區塊 (Issue #14)"""
+    html = client.get('/').data.decode('utf-8')
+    assert 'id="judgment-rule"' in html
+    assert 'id="judgment-primary"' in html
+    assert '朱熹' in html
 
 
 

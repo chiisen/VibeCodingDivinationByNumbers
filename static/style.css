@@ -514,6 +514,35 @@ body {
     background: rgba(200, 62, 61, 0.05);
 }
 
+/* 朱熹變占判法區塊 (Issue #14) */
+.judgment-box {
+    border-left-color: var(--gold-light);
+    background: rgba(212, 175, 55, 0.06);
+}
+
+.judgment-rule-tag {
+    display: inline-block;
+    color: var(--gold-light);
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-right: 10px;
+}
+
+.judgment-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.judgment-source {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+
+.judgment-source span {
+    color: var(--gold-primary);
+}
+
 .box-header {
     font-family: var(--font-serif);
     font-size: 0.95rem;
