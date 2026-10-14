@@ -216,6 +216,21 @@ def test_index_has_judgment_panel(client):
     assert 'id="judgment-primary"' in html
     assert '朱熹' in html
 
+def test_index_has_sound_toggle(client):
+    """測試 UI 右上角具備音效切換按鈕 (Issue #15)"""
+    html = client.get('/').data.decode('utf-8')
+    assert 'id="sound-toggle"' in html
+    assert 'top-controls' in html
+
+def test_script_persists_sound_state(client):
+    """測試 script.js 以 LocalStorage 持久化音效狀態，並於靜音時不播放音效 (Issue #15)"""
+    js = client.get('/static/script.js').data.decode('utf-8')
+    assert "yijing_sound_enabled" in js
+    assert "localStorage.setItem(SOUND_STORAGE_KEY" in js
+    assert "localStorage.getItem(SOUND_STORAGE_KEY)" in js
+    # 靜音時須提前返回，不建立 AudioContext
+    assert 'if (!soundEnabled) return;' in js
+
 
 
 
