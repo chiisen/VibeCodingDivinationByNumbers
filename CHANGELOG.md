@@ -10,6 +10,10 @@
 - 實作《周易》筮法「多爻變」高級解卦邏輯：支援 1-6 個動爻與朱熹《易學啟蒙》變占判法（貞悔、主輔、用九用六）(Closes #14)。
 - 結果面板新增明確的「↺ 重新起卦 (R)」視覺按鈕，並保留 `[ R ]` 快捷鍵操作與輸入框防誤觸保護 (Closes #13)。
 
+### 變更 (Changed)
+- 完善 `README.md` 與 `運行說明.md`：詳述應用啟動方式、瀏覽器存取指南、自動順延連接埠邏輯及 Windows 系統保留 Port (WinNAT/WSL) 避讓機制。
+- 更新專案 `.python-version` 為 `3.11.9`。
+
 ### 移除 (Removed)
 - 移除 GitHub Actions CI 自動化測試工作流程 (`.github/workflows/ci.yml`) 與 README 中的 CI 狀態徽章。
 
